@@ -1,4 +1,4 @@
-# sc-utils
+# sc-audio
 
 Web Audio synthesizers, effects and utilities
 
