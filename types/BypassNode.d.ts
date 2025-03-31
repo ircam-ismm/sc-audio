@@ -1,7 +1,4 @@
 /**
- * @typedef {Object} BypassNodeOptions
- */
-/**
  * A class that allows to wrap a given sub graph, so that it can be bypassed.
  *
  * ```
@@ -16,7 +13,7 @@
  *
  * @extends GainNode
  * @param {BaseAudioContext} context
- * @param {BypassNodeOptions} [options={}]
+ * @param {Object} [options={}]
  * @param {boolean} [options.active=false]
  *
  * @example
@@ -81,5 +78,4 @@ export class BypassNode {
     disconnect(...args: any[]): void;
     #private;
 }
-export type BypassNodeOptions = any;
 //# sourceMappingURL=BypassNode.d.ts.map

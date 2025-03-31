@@ -15,12 +15,7 @@ npm install --save @ircam/sc-utils
 
 ### Table of Contents
 
-*   [BypassNodeOptions][1]
-*   [BypassNode][2]
-
-## BypassNodeOptions
-
-Type: [Object][3]
+*   [BypassNode][1]
 
 ## BypassNode
 
@@ -39,9 +34,9 @@ A class that allows to wrap a given sub graph, so that it can be bypassed.
 ### Parameters
 
 *   `context` **BaseAudioContext**&#x20;
-*   `options` **[BypassNodeOptions][1]**  (optional, default `{}`)
+*   `options` **[Object][2]**  (optional, default `{}`)
 
-    *   `options.active` **[boolean][4]**  (optional, default `false`)
+    *   `options.active` **[boolean][3]**  (optional, default `false`)
 
 ### Examples
 
@@ -98,7 +93,7 @@ bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
 Defines if the Bypass is active, i.e. if true the signal doesn't pass through
 the sub graph and flows directly to the output.
 
-Type: [boolean][4]
+Type: [boolean][3]
 
 ### connect
 
@@ -112,13 +107,11 @@ Type: [boolean][4]
 
 *   `args` **...any**&#x20;
 
-[1]: #bypassnodeoptions
+[1]: #bypassnode
 
-[2]: #bypassnode
+[2]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-
-[4]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
 <!-- apistop -->
 
