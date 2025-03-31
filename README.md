@@ -1,11 +1,11 @@
 # sc-utils
 
-Simple generic utilities (type check, common math functions, etc.)
+Web Audio synthesizers, effects and utilities
 
 ## Install
 
 ```
-npm install --save @ircam/sc-utils
+npm install --save @ircam/sc-audio
 ```
 
 ## API
