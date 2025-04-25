@@ -129,8 +129,6 @@ Type: [boolean][6]
 
 ### connect
 
-\[AudioNode#connect]{@link [https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect}][7]
-
 #### Parameters
 
 *   `args` **...any**&#x20;
@@ -162,7 +160,7 @@ It can be used for example to create dry / wet controls.
 *   `options` **[Object][5]**  (optional, default `{}`)
 
     *   `options.ratio` **[boolean][6]** Initial ratio (optional, default `0`)
-    *   `options.curve` **[Array][8]<[number][9]>** Curve to apply for the transition.
+    *   `options.curve` **[Array][7]<[number][8]>** Curve to apply for the transition.
         Defaults to equal power curve. (optional, default `null`)
 
 ### Examples
@@ -308,11 +306,9 @@ Represents the amount of gain in decibels to apply.
 
 [6]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[7]: https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect}
+[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-
-[9]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
 <!-- apistop -->
 
