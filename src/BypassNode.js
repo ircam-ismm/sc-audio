@@ -133,7 +133,9 @@ export class BypassNode extends GainNode {
     this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, now, 0.01);
   }
 
-  /** @type [AudioNode#connect]{@link https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect} */
+  /**
+   * see {@link https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect}
+   */
   connect(...args) {
     return this.#output.connect(...args);
   }
