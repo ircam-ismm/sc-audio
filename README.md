@@ -35,16 +35,15 @@ node docs/examples/BypassNode.js
 
 The `BypassNode` interface allows to wrap and bypass an audio sub graph.
 
-<code><pre>
-\[input]
-│     bypass
-├───────┐
-│       │
-\[subGraph]   │
-│       │
-├───────┘
-│
-\[output] </pre></code>
+      [input]
+         │     bypass
+         ├───────┐
+         │       │
+    [subGraph]   │
+         │       │
+         ├───────┘
+         │
+     [output]
 
 ### Parameters
 

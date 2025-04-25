@@ -4,7 +4,7 @@ import { isPlainObject } from '@ircam/sc-utils';
 /**
  * The `BypassNode` interface allows to wrap and bypass an audio sub graph.
  *
- * <code><pre>
+ * ```
  *   [input]
  *      │     bypass
  *      ├───────┐
@@ -14,7 +14,7 @@ import { isPlainObject } from '@ircam/sc-utils';
  *      ├───────┘
  *      │
  *  [output]
- * </pre></code>
+ * ```
  *
  * @extends GainNode
  * @param {BaseAudioContext} context
