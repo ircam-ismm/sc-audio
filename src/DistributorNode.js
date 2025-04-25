@@ -20,14 +20,14 @@ import {
  *
  * It can be used for example to create dry / wet controls.
  *
- * <code><pre>
+ * ```
  *         [input]
  *            │
  *            │ ratio
  *     ┌──────┴─────┐
  *     │            │
  * [output 0]   [output 1]
- * </pre></code>
+ * ```
  *
  * @extends GainNode
  * @param {BaseAudioContext} context

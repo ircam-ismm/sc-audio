@@ -148,13 +148,12 @@ The `DistributorNode` interface allows to distribute an input between two output
 
 It can be used for example to create dry / wet controls.
 
-<code><pre>
-\[input]
-│
-│ ratio
-┌──────┴─────┐
-│            │
-\[output 0]   \[output 1] </pre></code>
+            [input]
+               │
+               │ ratio
+        ┌──────┴─────┐
+        │            │
+    [output 0]   [output 1]
 
 ### Parameters
 
