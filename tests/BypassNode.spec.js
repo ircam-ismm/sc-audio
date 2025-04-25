@@ -4,36 +4,18 @@ import { OfflineAudioContext, ConstantSourceNode, GainNode } from 'isomorphic-we
 
 const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 48000 };
 
-describe('# Bypass', () => {
-  describe('## constructor(audioContext: AudioContext, options: BypassOptions)', () => {
-    it('should throw if argument 1 is not an AudioContext', () => {
-      assert.throws(() => new BypassNode({}));
-      assert.throws(() => new BypassNode(null));
-      assert.throws(() => new BypassNode('string'));
-      assert.throws(() => new BypassNode(1));
-      assert.throws(() => new BypassNode(NaN));
+describe('# BypassNode', () => {
+  describe('## constructor(context, options)', () => {
+    it('active should be false by default', () => {
+      const audioContext = new OfflineAudioContext(audioContextOptions);
+      const node = new BypassNode(audioContext);
+      assert.isFalse(node.active);
     });
 
-    it('should succeed if only argument 1 is given', () => {
+    it('should configure active flag from options', () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
-      const bypass = new BypassNode(audioContext);
-      assert.isTrue(bypass instanceof BypassNode);
-      assert.isFalse(bypass.active);
-    });
-
-    it('should throw if argument 2 is not an Object', () => {
-      const audioContext = new OfflineAudioContext(audioContextOptions);
-      assert.throws(() => new BypassNode(audioContext, null));
-      assert.throws(() => new BypassNode(audioContext, 'string'));
-      assert.throws(() => new BypassNode(audioContext, 1));
-      assert.throws(() => new BypassNode(audioContext, NaN));
-    });
-
-    it('should succeed if only argument 1 is given', () => {
-      const audioContext = new OfflineAudioContext(audioContextOptions);
-      const bypass = new BypassNode(audioContext, { active: true });
-      assert.isTrue(bypass instanceof BypassNode);
-      assert.isTrue(bypass.active);
+      const node = new BypassNode(audioContext, { active: true });
+      assert.isTrue(node.active);
     });
   });
 

@@ -1,14 +1,16 @@
 /**
- * A class that allows to wrap a given sub graph, so that it can be bypassed.
+ * The `BypassNode` interface allows to wrap and bypass an audio sub graph.
  *
  * ```
- *     │     bypass
- *     ├───────┐
- *     │       │
- * [subGraph]  │
- *     │       │
- *     ├───────┘
- *     │
+ *   [input]
+ *      │     bypass
+ *      ├───────┐
+ *      │       │
+ * [subGraph]   │
+ *      │       │
+ *      ├───────┘
+ *      │
+ *  [output]
  * ```
  *
  * @extends GainNode
@@ -17,33 +19,46 @@
  * @param {boolean} [options.active=false]
  *
  * @example
- * import { AudioContext, BiquadFilterNode } from 'isomorphic-web-audio-api';
- * import { BypassNode } from '@ircam/sc-audio';
+ * import {
+ *   AudioContext,
+ *   AudioBufferSourceNode,
+ *   BiquadFilterNode,
+ * } from 'isomorphic-web-audio-api';
+ * import {
+ *   AudioBufferLoader,
+ *   BypassNode,
+ * } from '../../src/index.js';
  *
+ * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();
+ * // load an audio buffer
+ * const loader = new AudioBufferLoader(audioContext);
+ * const buffer = await loader.load('../assets/drum-loop.wav');
  *
- * const filter = new BiquadFilterNode(audioContext); // the effect to bypass
- * const bypass = new BypassNode(audioContext, { active: true });
- * // wrap the subgraph within the bypass
- * bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
- * // connect the bypass to the overall graph
- * someSource.connect(bypass).connect(audioContext.destination);
+ * const lowpass = new BiquadFilterNode(audioContext, { frequency: 400 });
+ * const bypass = new BypassNode(audioContext);
+ * // connect bypass to destination
+ * bypass.connect(audioContext.destination);
+ * // connect lowpass filter into subgraph
+ * bypass.subGraphInput
+ *   .connect(lowpass)
+ *   .connect(bypass.subGraphOutput);
+ *
+ * // pipe a source in the graph
+ * const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+ * src.connect(bypass);
+ * src.start();
+ *
+ * // bypass the lowpass filter in 1 second
+ * setInterval(() => {
+ *   bypass.active = !bypass.active;
+ *   console.log('set active to:', bypass.active)
+ * }, buffer.duration * 1000);
  */
 export class BypassNode {
-    static parameters: {
-        active: {
-            type: string;
-            default: boolean;
-        };
-    };
     constructor(context: any, { active, }?: {
         active?: boolean;
     }, ...args: any[]);
-    /**
-     * The BaseAudioContext which owns this AudioNode.
-     * @type {BaseAudioContext}
-     */
-    get context(): BaseAudioContext;
     /**
      * Node to connect to the input of the sub graph
      *
@@ -75,7 +90,7 @@ export class BypassNode {
     /** @inheritdoc */
     connect(...args: any[]): any;
     /** @inheritdoc */
-    disconnect(...args: any[]): void;
+    disconnect(...args: any[]): any;
     #private;
 }
 //# sourceMappingURL=BypassNode.d.ts.map

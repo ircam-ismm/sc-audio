@@ -2,17 +2,19 @@ import { BaseAudioContext, GainNode } from 'isomorphic-web-audio-api';
 import { isPlainObject } from '@ircam/sc-utils';
 
 /**
- * A class that allows to wrap a given sub graph, so that it can be bypassed.
+ * The `BypassNode` interface allows to wrap and bypass an audio sub graph.
  *
- * ```
- *     │     bypass
- *     ├───────┐
- *     │       │
- * [subGraph]  │
- *     │       │
- *     ├───────┘
- *     │
- * ```
+ * <code><pre>
+ *   [input]
+ *      │     bypass
+ *      ├───────┐
+ *      │       │
+ * [subGraph]   │
+ *      │       │
+ *      ├───────┘
+ *      │
+ *  [output]
+ * </pre></code>
  *
  * @extends GainNode
  * @param {BaseAudioContext} context
@@ -20,68 +22,71 @@ import { isPlainObject } from '@ircam/sc-utils';
  * @param {boolean} [options.active=false]
  *
  * @example
- * import { AudioContext, BiquadFilterNode } from 'isomorphic-web-audio-api';
- * import { BypassNode } from '@ircam/sc-audio';
+ * import {
+ *   AudioContext,
+ *   AudioBufferSourceNode,
+ *   BiquadFilterNode,
+ * } from 'isomorphic-web-audio-api';
+ * import {
+ *   AudioBufferLoader,
+ *   BypassNode,
+ * } from '../../src/index.js';
  *
+ * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();
+ * // load an audio buffer
+ * const loader = new AudioBufferLoader(audioContext);
+ * const buffer = await loader.load('../assets/drum-loop.wav');
  *
- * const filter = new BiquadFilterNode(audioContext); // the effect to bypass
- * const bypass = new BypassNode(audioContext, { active: true });
- * // wrap the subgraph within the bypass
- * bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
- * // connect the bypass to the overall graph
- * someSource.connect(bypass).connect(audioContext.destination);
+ * const lowpass = new BiquadFilterNode(audioContext, { frequency: 400 });
+ * const bypass = new BypassNode(audioContext);
+ * // connect bypass to destination
+ * bypass.connect(audioContext.destination);
+ * // connect lowpass filter into subgraph
+ * bypass.subGraphInput
+ *   .connect(lowpass)
+ *   .connect(bypass.subGraphOutput);
+ *
+ * // pipe a source in the graph
+ * const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+ * src.connect(bypass);
+ * src.start();
+ *
+ * // bypass the lowpass filter in 1 second
+ * setInterval(() => {
+ *   bypass.active = !bypass.active;
+ *   console.log('set active to:', bypass.active)
+ * }, buffer.duration * 1000);
  */
 export class BypassNode extends GainNode {
-  static parameters = {
-    active: {
-      type: 'boolean',
-      default: false,
-    },
-  };
-
-  #context = true;
   #active = true;
   #bypass = null;
   #subGraphIn = null;
   #output = null;
 
   constructor(context, {
-    active = BypassNode.parameters.active.default,
+    active = false,
   } = {}) {
-    super(context);
-
     if (!(context instanceof BaseAudioContext)) {
-      throw new Error('Failed to construct BypassNode: argument 1 is not an instance of BaseAudioContext');
+      throw new TypeError('Failed to construct BypassNode: argument 1 is not an instance of BaseAudioContext');
     }
 
     if (arguments[1] !== undefined && !isPlainObject(arguments[1])) {
-      throw new Error('Failed to construct BypassNode: argument 2 is not an object');
+      throw new TypeError('Failed to construct BypassNode: argument 2 is not an object');
     }
 
-    this.#context = context;
+    super(context);
+
     this.#active = !!active;
 
-    this.#bypass = new GainNode(this.#context, {
-      gain: this.#active ? 1 : 0,
-    });
+    this.#bypass = new GainNode(this.context, { gain: this.#active ? 1 : 0 });
     super.connect(this.#bypass);
 
-    this.#subGraphIn = new GainNode(this.#context, {
-      gain: this.#active ? 0 : 1,
-    });
+    this.#subGraphIn = new GainNode(this.context, { gain: this.#active ? 0 : 1 });
     super.connect(this.#subGraphIn);
 
-    this.#output = new GainNode(this.#context);
+    this.#output = new GainNode(this.context);
     this.#bypass.connect(this.#output);
-  }
-
-  /**
-   * The BaseAudioContext which owns this AudioNode.
-   * @type {BaseAudioContext}
-   */
-  get context() {
-    return this.#context;
   }
 
   /**
@@ -123,7 +128,7 @@ export class BypassNode extends GainNode {
   set active(value) {
     this.#active = value;
 
-    const now = this.#context.currentTime;
+    const now = this.context.currentTime;
     this.#bypass.gain.setTargetAtTime(this.#active ? 1 : 0, now, 0.01);
     this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, now, 0.01);
   }
@@ -135,6 +140,6 @@ export class BypassNode extends GainNode {
 
   /** @inheritdoc */
   disconnect(...args) {
-    this.#output.disconnect(...args);
+    return this.#output.disconnect(...args);
   }
 }

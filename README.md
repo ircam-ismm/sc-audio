@@ -8,6 +8,15 @@ Web Audio synthesizers, effects and utilities
 npm install --save @ircam/sc-audio
 ```
 
+## Examples
+
+You can run the examples in `docs/examples` using Node.js, simply:
+
+```sh
+npm install
+node docs/examples/BypassNode.js
+```
+
 ## API
 
 <!-- api -->
@@ -16,49 +25,73 @@ npm install --save @ircam/sc-audio
 ### Table of Contents
 
 *   [BypassNode][1]
+*   [DistributorNode][2]
+*   [ScaledConstantSourceNode][3]
+*   [VolumeNode][4]
 
 ## BypassNode
 
 **Extends GainNode**
 
-A class that allows to wrap a given sub graph, so that it can be bypassed.
+The `BypassNode` interface allows to wrap and bypass an audio sub graph.
 
-        │     bypass
-        ├───────┐
-        │       │
-    [subGraph]  │
-        │       │
-        ├───────┘
-        │
+<code><pre>
+\[input]
+│     bypass
+├───────┐
+│       │
+\[subGraph]   │
+│       │
+├───────┘
+│
+\[output] </pre></code>
 
 ### Parameters
 
 *   `context` **BaseAudioContext**&#x20;
-*   `options` **[Object][2]**  (optional, default `{}`)
+*   `options` **[Object][5]**  (optional, default `{}`)
 
-    *   `options.active` **[boolean][3]**  (optional, default `false`)
+    *   `options.active` **[boolean][6]**  (optional, default `false`)
 
 ### Examples
 
 ```javascript
-import { AudioContext, BiquadFilterNode } from 'isomorphic-web-audio-api';
-import { BypassNode } from '@ircam/sc-audio';
+import {
+  AudioContext,
+  AudioBufferSourceNode,
+  BiquadFilterNode,
+} from 'isomorphic-web-audio-api';
+import {
+  AudioBufferLoader,
+  BypassNode,
+} from '../../src/index.js';
 
+// in browsers, you will need to resume on a user gesture
 const audioContext = new AudioContext();
+// load an audio buffer
+const loader = new AudioBufferLoader(audioContext);
+const buffer = await loader.load('../assets/drum-loop.wav');
 
-const filter = new BiquadFilterNode(audioContext); // the effect to bypass
-const bypass = new BypassNode(audioContext, { active: true });
-// wrap the subgraph within the bypass
-bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
-// connect the bypass to the overall graph
-someSource.connect(bypass).connect(audioContext.destination);
+const lowpass = new BiquadFilterNode(audioContext, { frequency: 400 });
+const bypass = new BypassNode(audioContext);
+// connect bypass to destination
+bypass.connect(audioContext.destination);
+// connect lowpass filter into subgraph
+bypass.subGraphInput
+  .connect(lowpass)
+  .connect(bypass.subGraphOutput);
+
+// pipe a source in the graph
+const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+src.connect(bypass);
+src.start();
+
+// bypass the lowpass filter in 1 second
+setInterval(() => {
+  bypass.active = !bypass.active;
+  console.log('set active to:', bypass.active)
+}, buffer.duration * 1000);
 ```
-
-### context
-
-The BaseAudioContext which owns this AudioNode.
-
-Type: BaseAudioContext
 
 ### subGraphInput
 
@@ -93,7 +126,7 @@ bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
 Defines if the Bypass is active, i.e. if true the signal doesn't pass through
 the sub graph and flows directly to the output.
 
-Type: [boolean][3]
+Type: [boolean][6]
 
 ### connect
 
@@ -107,11 +140,177 @@ Type: [boolean][3]
 
 *   `args` **...any**&#x20;
 
+## DistributorNode
+
+**Extends GainNode**
+
+The `DistributorNode` interface allows to distribute an input between two output.
+
+It can be used for example to create dry / wet controls.
+
+<code><pre>
+\[input]
+│
+│ ratio
+┌──────┴─────┐
+│            │
+\[output 0]   \[output 1] </pre></code>
+
+### Parameters
+
+*   `context` **BaseAudioContext**&#x20;
+*   `options` **[Object][5]**  (optional, default `{}`)
+
+    *   `options.ratio` **[boolean][6]** Initial ratio (optional, default `0`)
+    *   `options.curve` **[Array][7]<[number][8]>** Curve to apply for the transition.
+        Defaults to equal power curve. (optional, default `null`)
+
+### Examples
+
+```javascript
+import {
+  AudioContext,
+  AudioBufferSourceNode,
+  ConvolverNode,
+} from 'isomorphic-web-audio-api';
+import {
+  AudioBufferLoader,
+  DistributorNode,
+} from '../../src/index.js';
+
+// in browsers, you will need to resume on a user gesture
+const audioContext = new AudioContext();
+// load an audio buffer
+const loader = new AudioBufferLoader(audioContext);
+const ir = await loader.load('../assets/parking-garage-response.wav');
+const buffer = await loader.load('../assets/drum-loop.wav');
+
+// create the graph
+const convolver = new ConvolverNode(audioContext, { buffer: ir });
+convolver.connect(audioContext.destination);
+
+const dryWet = new DistributorNode(audioContext);
+// connect dry output (0) to destination
+dryWet.connect(audioContext.destination, 0);
+// connect wet output (1) to convolver
+dryWet.connect(convolver, 1);
+
+// pipe a source in the graph
+const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+src.connect(dryWet);
+src.start();
+
+// ramp from dry to wet in 4 seconds, then back to dry
+dryWet.ratio.setValueAtTime(0, audioContext.currentTime);
+dryWet.ratio.linearRampToValueAtTime(1, audioContext.currentTime + buffer.duration);
+dryWet.ratio.exponentialRampToValueAtTime(0.001, audioContext.currentTime + buffer.duration * 2);
+```
+
+### numberOfOutputs
+
+### ratio
+
+Amount of incoming signal to route between the two outputs:
+
+*   a ratio of 0 is routed to output 0
+*   a ratio of 1 is routed to output 1
+
+### connect
+
+#### Parameters
+
+*   `destination` &#x20;
+*   `output`   (optional, default `0`)
+*   `input`   (optional, default `0`)
+
+### disconnect
+
+#### Parameters
+
+*   `args` **...any**&#x20;
+
+## ScaledConstantSourceNode
+
+**Extends ConstantSourceNode**
+
+A ConstantSourceNode that scales it offset signal from given domain to a given
+range.
+
+In particular, this is useful to create an audio param signal to be piped into a
+WaveShaper node.
+
+Note that output values are not clamped.
+
+### Parameters
+
+*   `context` &#x20;
+*   `$1` **[Object][5]**  (optional, default `{}`)
+
+    *   `$1.inputStart`   (optional, default `0`)
+    *   `$1.inputEnd`   (optional, default `1`)
+    *   `$1.outputStart`   (optional, default `-1`)
+    *   `$1.outputEnd`   (optional, default `1`)
+    *   `$1.offset`   (optional, default `0`)
+
+### start
+
+#### Parameters
+
+*   `args` **...any**&#x20;
+
+### stop
+
+#### Parameters
+
+*   `args` **...any**&#x20;
+
+### connect
+
+#### Parameters
+
+*   `args` **...any**&#x20;
+
+### disconnect
+
+#### Parameters
+
+*   `args` **...any**&#x20;
+
+## VolumeNode
+
+**Extends GainNode**
+
+The Volume, is similar to a gain but controllable in decibels
+
+### Parameters
+
+*   `context` &#x20;
+*   `$1` **[Object][5]**  (optional, default `{}`)
+
+    *   `$1.volume`   (optional, default `0`)
+    *   `$1.min`   (optional, default `DEFAULT_MIN_DB`)
+    *   `$1.max`   (optional, default `DEFAULT_MAX_DB`)
+    *   `$1.curve`   (optional, default `null`)
+
+### volume
+
+Represents the amount of gain in decibels to apply.
+
 [1]: #bypassnode
 
-[2]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[2]: #distributornode
 
-[3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[3]: #scaledconstantsourcenode
+
+[4]: #volumenode
+
+[5]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+[6]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
 <!-- apistop -->
 
