@@ -2,6 +2,7 @@
 export const components = [
   'BypassNode',
   'DistributorNode',
+  'VolumeNode',
 ].sort();
 
 export const pages = {

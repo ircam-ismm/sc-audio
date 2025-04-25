@@ -108,29 +108,23 @@ async function setContent(pages, page) {
 
   // exit current page
   if (current && current.exit) {
-    current.exit();
+    await current.exit();
   }
   // grab new page
   current = await import(`./${page}.js`);
 
+  // enter first then render the page
+  if (current.enter) {
+    await current.enter(audioContext, loader);
+  }
+
   const res = await fetch(`./examples/${page}.js`);
-  // so that we can test examples in node
-  let example = await res.text();
+  const rawExample = await res.text();
   const localImport = new RegExp('../../src/index.js', 'g');
-  example = example.replace(localImport, `@ircam/${libName}`);
+  const example = rawExample.replace(localImport, `@ircam/${libName}`);
 
   const template = isFunction(current.template) ? current.template(example) : current.template;
   render(template, document.querySelector('#main > section'));
-
-  // focus the example element
-  const $demoEl = document.querySelector(`#main > section ${page}`);
-  if ($demoEl) {
-    setTimeout(() => $demoEl.focus(), 0);
-  }
-
-  if (current.enter) {
-    current.enter(audioContext, loader);
-  }
 }
 
 (async function main() {

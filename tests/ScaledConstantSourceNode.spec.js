@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { OfflineAudioContext, AudioParam } from 'isomorphic-web-audio-api';
-import { ScaledConstantSourceNode } from '../src/ScaledConstantSourceNode.js';
+import { ScaledConstantSourceNode } from '../src/index.js';
 
 const audioContextOptions = { length: 256, numberOfChannels: 1, sampleRate: 48000 };
 
@@ -59,7 +59,7 @@ describe('# ScaledConstantSourceNode', () => {
       const { config, values } = tests[i];
       const { inputStart, inputEnd, outputStart, outputEnd } = config;
 
-      it.only(`should scale correctly from [${inputStart, inputEnd}] to [${outputStart, outputEnd}]`, async () => {
+      it(`should scale correctly from [${inputStart, inputEnd}] to [${outputStart, outputEnd}]`, async () => {
         for (let [input, output] of values) {
           const audioContext = new OfflineAudioContext(audioContextOptions);
           const node = new ScaledConstantSourceNode(audioContext, {

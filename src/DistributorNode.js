@@ -4,7 +4,8 @@ import {
   WaveShaperNode,
 } from 'isomorphic-web-audio-api';
 import {
-  isPlainObject
+  isPlainObject,
+  isSequence,
 } from '@ircam/sc-utils';
 
 import {
@@ -91,6 +92,14 @@ export class DistributorNode extends GainNode {
       throw new TypeError('Failed to construct DistributorNode: Argument 2 is not an object');
     }
 
+    if (!Number.isFinite(ratio)) {
+      throw new TypeError('Failed to construct DistributorNode: options.ratio is not a finite number');
+    }
+
+    if (!isSequence(curve)) {
+      throw new TypeError('Failed to construct DistributorNode: options.curve is not a sequence of finite number');
+    }
+
     super(context);
 
     this.#dryGain = new GainNode(context, { gain: 0 });
@@ -121,9 +130,14 @@ export class DistributorNode extends GainNode {
     this.#ratioCurveController.start();
   }
 
-  /** @inheritdoc */
+  /** @private */
+  get gain() {
+    return undefined;
+  }
+
+  /** @ignore */
   get numberOfOutputs() {
-    return 2;
+      return 2;
   }
 
   /**
@@ -136,7 +150,7 @@ export class DistributorNode extends GainNode {
     return this.#ratioCurveController.offset;
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   connect(destination, output = 0, input = 0) {
     // [spec]
     // AudioNode connect (AudioNode destinationNode,
@@ -160,7 +174,7 @@ export class DistributorNode extends GainNode {
     }
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   disconnect(...args) {
     // [spec]
     // undefined disconnect ();

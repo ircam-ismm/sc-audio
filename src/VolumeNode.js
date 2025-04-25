@@ -1,11 +1,17 @@
 import {
   decibelToLinear,
+  isPlainObject,
   isSequence,
 } from '@ircam/sc-utils';
 import {
+  BaseAudioContext,
   GainNode,
   WaveShaperNode,
 } from 'isomorphic-web-audio-api';
+
+import {
+  ScaledConstantSourceNode
+} from './ScaledConstantSourceNode.js';
 
 import { DEFAULT_WAVETABLE_SIZE } from './utils.js';
 
@@ -32,6 +38,9 @@ const DEFAULT_VOLUME_WAVETABLE = computeWavetable(DEFAULT_WAVETABLE_SIZE, DEFAUL
  */
 export class VolumeNode extends GainNode {
   #volumeCurveController = null;
+  #min = null;
+  #max = null;
+  #dbWavetable = null;
 
   constructor(context, {
     volume = 0,
@@ -75,10 +84,13 @@ export class VolumeNode extends GainNode {
       }
     }
 
-    super(context, { gain: decibelToLinear(volume) });
+    super(context, { gain: 0 });
 
-    const dbWavetable = new WaveShaperNode(context, { curve: dbCurve });
-    dbWavetable.connect(super.gain);
+    this.#min = min;
+    this.#max = max;
+
+    this.#dbWavetable = new WaveShaperNode(context, { curve: dbCurve });
+    this.#dbWavetable.connect(super.gain);
 
     this.#volumeCurveController = new ScaledConstantSourceNode(context, {
       inputStart: min,
@@ -88,8 +100,36 @@ export class VolumeNode extends GainNode {
       offset: volume,
     });
 
-    this.#volumeCurveController.connect(dbWavetable);
+    this.#volumeCurveController.connect(this.#dbWavetable);
     this.#volumeCurveController.start();
+  }
+
+  /**
+   * Minimum value of the volume in dB.
+   * @type number
+   */
+  get min() {
+    return this.#min;
+  }
+
+  /**
+   * Maximum value of the volume in dB.
+   * @type number
+   */
+  get max() {
+    return this.#max;
+  }
+
+  /**
+   * Curve used to map from db to linear gain.
+   *
+   * Note that the returned sequence value is a copy of the actual curve used, then
+   * modifying the returned value won't affect the audio computation.
+   *
+   * @type Float32Array
+   */
+  get curve() {
+    return this.#dbWavetable.curve;
   }
 
   /**

@@ -16,7 +16,7 @@ import { isPlainObject } from '@ircam/sc-utils';
  *  [output]
  * ```
  *
- * @extends [GainNode]{@link https://developer.mozilla.org/en-US/docs/Web/API/GainNode}
+ * @extends GainNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {boolean} [options.active=false]
@@ -87,6 +87,14 @@ export class BypassNode extends GainNode {
 
     this.#output = new GainNode(this.context);
     this.#bypass.connect(this.#output);
+  }
+
+  /**
+   * Shallow `super.gain` AudioParam
+   * @private
+   */
+  get gain() {
+    return undefined;
   }
 
   /**

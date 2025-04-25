@@ -1,6 +1,6 @@
 
 // sine / cosine
-export const DEFAULT_WAVETABLE_SIZE = 1024;
+export const DEFAULT_WAVETABLE_SIZE = 2048;
 // protected values
 /** @private */
 export const QUARTER_SIN_WAVETABLE = new Float32Array(DEFAULT_WAVETABLE_SIZE);

@@ -9,12 +9,12 @@ import {
 
 /**
  * A ConstantSourceNode that scales it offset signal from given domain to a given
- * range.
+ * range. Note that output values are not clamped.
  *
  * In particular, this is useful to create an audio param signal to be piped into a
  * WaveShaper node.
  *
- * Note that output values are not clamped.
+ * @private
  */
 export class ScaledConstantSourceNode extends ConstantSourceNode {
   #output = null;
@@ -36,6 +36,26 @@ export class ScaledConstantSourceNode extends ConstantSourceNode {
       throw new TypeError('Failed to construct ScaledConstantSourceNode: Argument 2 is not an object');
     }
 
+    if (!Number.isFinite(inputStart)) {
+      throw new TypeError('Failed to construct ScaledConstantSourceNode: options.inputStart is not a finite number');
+    }
+
+    if (!Number.isFinite(inputEnd)) {
+      throw new TypeError('Failed to construct ScaledConstantSourceNode: options.inputEnd is not a finite number');
+    }
+
+    if (!Number.isFinite(outputStart)) {
+      throw new TypeError('Failed to construct ScaledConstantSourceNode: options.outputStart is not a finite number');
+    }
+
+    if (!Number.isFinite(outputEnd)) {
+      throw new TypeError('Failed to construct ScaledConstantSourceNode: options.outputEnd is not a finite number');
+    }
+
+    if (!Number.isFinite(offset)) {
+      throw new TypeError('Failed to construct ScaledConstantSourceNode: options.offset is not a finite number');
+    }
+
     super(context, { offset });
 
     this.#inputStartOffset = new ConstantSourceNode(context, { offset: -inputStart });
@@ -49,26 +69,26 @@ export class ScaledConstantSourceNode extends ConstantSourceNode {
     this.#outputStartOffset.connect(this.#output);
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   start(...args) {
     super.start(...args);
     this.#inputStartOffset.start(...args);
     this.#outputStartOffset.start(...args);
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   stop(...args) {
     super.start(...args);
     this.#inputStartOffset.start(...args);
     this.#outputStartOffset.start(...args);
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   connect(...args) {
     return this.#output.connect(...args);
   }
 
-  /** @inheritdoc */
+  /** @ignore */
   disconnect(...args) {
     return this.#output.connect(...args);
   }

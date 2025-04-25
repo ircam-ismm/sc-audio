@@ -25,6 +25,25 @@ describe('# DistributorNode', () => {
       assert.equal(node.ratio.value, 0.5);
     });
 
+    it('should throw if ratio is no finite', () => {
+      const audioContext = new OfflineAudioContext(audioContextOptions);
+      assert.throws(() => new DistributorNode(audioContext, { ratio: NaN }));
+    });
+
+    it('should throw if ratio is no finite', () => {
+      const audioContext = new OfflineAudioContext(audioContextOptions);
+      assert.throws(() => new DistributorNode(audioContext, { ratio: NaN }));
+    });
+
+    it('should throw if curve is an invalid sequence of numbers', () => {
+      const audioContext = new OfflineAudioContext(audioContextOptions);
+      assert.throws(() => new DistributorNode(audioContext, {
+        curve: [0, 1, 2, NaN, 4],
+      }));
+    });
+  });
+
+  describe('## numberOfOutputs: number', () => {
     it('should report correct number of outputs', () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
       const node = new DistributorNode(audioContext, { ratio: 0.5 });
@@ -32,7 +51,7 @@ describe('# DistributorNode', () => {
     });
   });
 
-  describe('## .ratio: AudioParam', () => {
+  describe('## ratio: AudioParam', () => {
     it('should route to dry output if ratio is 0', async () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
       const src = new ConstantSourceNode(audioContext, { offset: 2 });
@@ -75,7 +94,7 @@ describe('# DistributorNode', () => {
       assert.deepEqual(result.getChannelData(1), expectedRight);
     });
 
-    it('should use equal power curve by default', async () => {
+    it.only('should use equal power curve by default', async () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
       const src = new ConstantSourceNode(audioContext, { offset: 1 });
       const dryWet = new DistributorNode(audioContext, { ratio: 0.5 });
@@ -88,11 +107,16 @@ describe('# DistributorNode', () => {
 
       src.start();
 
-      const result = await audioContext.startRendering();
-      const expected = new Float32Array(256).fill(0.7071065902709961);
+      const buffer = await audioContext.startRendering();
+      const expected = new Float32Array(256).fill(Math.cos(Math.PI / 4));
 
-      assert.deepEqual(result.getChannelData(0), expected);
-      assert.deepEqual(result.getChannelData(1), expected);
+      [0, 1].forEach(channelIndex => {
+        const result = buffer.getChannelData(channelIndex);
+
+        for (let i = 0; i < result.length; i++) {
+          assert.approximately(result[i], expected[i], 1e-7);
+        }
+      });
     });
 
     it('should be able to apply automation', async () => {

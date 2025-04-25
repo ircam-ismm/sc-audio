@@ -42,7 +42,7 @@ export function template(example) {
 [output 0]   [output 1]
 </sc-code-example>
 
-<h3>Example</h3>
+<h3>Demo</h3>
 <div>
   <sc-transport
     .buttons=${['play', 'stop']}
@@ -73,6 +73,8 @@ export function template(example) {
     @input=${e => dryWet.ratio.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
   ></sc-slider>
 </div>
+
+<h3>Example</h3>
 <sc-code-example>${example}</sc-code-example>
   `;
 }
