@@ -6,14 +6,14 @@ import {
 import { ensureResumed } from './ensure-resumed.js';
 import { DistributorNode } from '../../src/index.js';
 
-let buffer, src, dryWet, audioContext;
+let buffer, src, dryWet, convolver, audioContext;
 
 export async function enter(context, loader) {
   audioContext = context;
   const ir = await loader.load('./assets/parking-garage-response.wav');
   buffer = await loader.load('./assets/drum-loop.wav');
 
-  const convolver = new ConvolverNode(audioContext, { buffer: ir });
+  convolver = new ConvolverNode(audioContext, { buffer: ir });
   convolver.connect(audioContext.destination);
 
   dryWet = new DistributorNode(audioContext);
@@ -25,6 +25,9 @@ export function exit() {
   if (src) {
     src.stop();
   }
+
+  convolver.disconnect();
+  dryWet.disconnect();
 }
 
 export function template(example) {

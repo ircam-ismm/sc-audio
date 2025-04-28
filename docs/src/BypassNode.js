@@ -6,13 +6,13 @@ import {
 import { ensureResumed } from './ensure-resumed.js';
 import { BypassNode } from '../../src/index.js';
 
-let buffer, src, bypass, audioContext;
+let buffer, src, bypass,lowpass,  audioContext;
 
 export async function enter(context, loader) {
   audioContext = context;
   buffer = await loader.load('./assets/drum-loop.wav');
 
-  const lowpass = new BiquadFilterNode(audioContext, { frequency: 400 });
+  lowpass = new BiquadFilterNode(audioContext, { frequency: 400 });
 
   bypass = new BypassNode(audioContext);
   bypass.connect(audioContext.destination);
@@ -26,6 +26,9 @@ export function exit() {
   if (src) {
     src.stop();
   }
+
+  lowpass.disconnect();
+  bypass.disconnect();
 }
 
 export function template(example) {

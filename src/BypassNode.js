@@ -133,12 +133,31 @@ export class BypassNode extends GainNode {
     return this.#active;
   }
 
-  set active(value) {
-    this.#active = value;
+  set active(active) {
+    this.setActiveAtTime(active, this.context.currentTime);
+  }
 
-    const now = this.context.currentTime;
-    this.#bypass.gain.setTargetAtTime(this.#active ? 1 : 0, now, 0.01);
-    this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, now, 0.01);
+  /**
+   * Activate or deactivate the `BypassNode` at given time.
+   *
+   * @param {boolean} active - whether the bypass is active or not
+   * @param {number} when - time at which the change should be applied. In audio
+   *  context current time coordinates
+   */
+  setActiveAtTime(active, when) {
+    if (!Number.isFinite(when)) {
+      throw new TypeError(`Failed to execute 'setActiveAtTime' on 'MuteNode': argument 2 is not a finite number`);
+    }
+
+    active = !!active;
+
+    if (active !== this.#active) {
+      this.#active = active;
+
+      when = Math.max(when, this.context.currentTime);
+      this.#bypass.gain.setTargetAtTime(this.#active ? 1 : 0, when, 0.01);
+      this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, when, 0.01);
+    }
   }
 
   /** @ignore */

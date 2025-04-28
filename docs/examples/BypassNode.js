@@ -28,8 +28,5 @@ const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
 src.connect(bypass);
 src.start();
 
-// bypass the lowpass filter in 1 second
-setInterval(() => {
-  bypass.active = !bypass.active;
-  console.log('set active to:', bypass.active)
-}, buffer.duration * 1000);
+// bypass the lowpass filter on each sample loop
+setInterval(() => bypass.active = !bypass.active, buffer.duration * 1000);

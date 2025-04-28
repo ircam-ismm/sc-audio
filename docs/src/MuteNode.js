@@ -3,16 +3,16 @@ import {
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
 import { ensureResumed } from './ensure-resumed.js';
-import { VolumeNode } from '../../src/index.js';
+import { MuteNode } from '../../src/index.js';
 
-let buffer, src, fader, audioContext;
+let buffer, src, mute, audioContext;
 
 export async function enter(context, loader) {
   audioContext = context;
   buffer = await loader.load('./assets/drum-loop.wav');
 
-  fader = new VolumeNode(audioContext);
-  fader.connect(audioContext.destination);
+  mute = new MuteNode(audioContext);
+  mute.connect(audioContext.destination);
 }
 
 export function exit() {
@@ -20,19 +20,19 @@ export function exit() {
     src.stop();
   }
 
-  fader.disconnect();
+  mute.disconnect();
 }
 
 export function template(example) {
   return html`
-<h2>VolumeNode</h2>
+<h2>MuteNode</h2>
 
-<p>The VolumeNode interface represents a change in volume controlled in dB.</p>
+<p>The MuteNode interface allows to mute a given input.</p>
 
 <sc-code-example language="txt">
 [input]
    │
-   │ control volume in dB
+   │ mute
    │
 [output]
 </sc-code-example>
@@ -52,21 +52,18 @@ export function template(example) {
 
       if (e.detail.value === 'play') {
         src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
-        src.connect(fader);
+        src.connect(mute);
         src.start();
       }
     }}
   ></sc-transport>
 </div>
 <div>
-  <sc-text>.volume: AudioParam</sc-text>
-  <sc-slider
-    number-box
-    min=${fader.min}
-    max=${fader.max}
-    value=${fader.volume.value}
-    @input=${e => fader.volume.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
-  ></sc-slider>
+  <sc-text>.active: Boolean</sc-text>
+  <sc-toggle
+    ?active=${mute.active}
+    @change=${e => mute.active = e.detail.value}
+  ></sc-toggle>
 </div>
 
 <h3>Example</h3>

@@ -1,16 +1,20 @@
 // list of pages
-export const components = [
-  'BypassNode',
-  'DistributorNode',
-  'VolumeNode',
-].sort();
+const arrToObject = arr => {
+  return arr.reduce((acc, value) => {
+    acc[value] = value;
+    return acc;
+  }, {})
+};
+// export const routing = ;
 
 export const pages = {
   'intro': {
-    'home': 'home',
+    'Home': 'home',
   },
-  components: components.reduce((acc, value) => {
-    acc[value] = value;
-    return acc;
-  }, {}),
+  'routing': arrToObject([
+    'BypassNode',
+    'DistributorNode',
+    'MuteNode',
+    'VolumeNode',
+  ].sort()),
 };

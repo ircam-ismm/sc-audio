@@ -1,4 +1,4 @@
-export default async function ensureResumed(audioContext) {
+export async function ensureResumed(audioContext) {
   if (audioContext.state !== 'running') {
     await audioContext.resume();
   }
