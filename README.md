@@ -1,6 +1,12 @@
 # sc-audio
 
-Web Audio synthesizers, effects and utilities
+sc-audio is a [Web Audio](https://webaudio.github.io/web-audio-api/) library for prototyping and creating interactive audio applications both in the browser and Node.js (see [isomorphic-web-audio-api](https://github.com/ircam-ismm/isomorphic-web-audio-api)).
+
+The philosophy behind sc-audio is to provide audio nodes that behave just like regular native audio nodes, so that they can be inserted in your regular WebAudio graph.
+
+While we don't refuse per se to use AudioWorklet, we try to rely other native nodes wherever possible so that applications running on non-secure `http` protocol can still use most parts of the library.
+
+> _Work in progress_
 
 ## Install
 

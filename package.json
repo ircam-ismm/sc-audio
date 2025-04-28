@@ -7,6 +7,15 @@
   ],
   "description": "Web Audio synthesizers, effects and utilities",
   "license": "BSD-3-Clause",
+  "keywords": [
+    "web audio",
+    "prototyping",
+    "routing",
+    "effects",
+    "synthsizers",
+    "webaudio",
+    "creative coding"
+  ],
   "type": "module",
   "publishConfig": {
     "access": "public"
