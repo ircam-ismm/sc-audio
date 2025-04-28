@@ -13,7 +13,7 @@
  *  [output]
  * ```
  *
- * @extends GainNode
+ * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {boolean} [options.active=false]
@@ -27,7 +27,7 @@
  * import {
  *   AudioBufferLoader,
  *   BypassNode,
- * } from '../../src/index.js';
+ * } from '@ircam/sc-audio';
  *
  * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();
@@ -55,10 +55,15 @@
  *   console.log('set active to:', bypass.active)
  * }, buffer.duration * 1000);
  */
-export class BypassNode {
+export class BypassNode extends AudioNode {
     constructor(context: any, { active, }?: {
         active?: boolean;
     }, ...args: any[]);
+    /**
+     * Shallow `super.gain` AudioParam
+     * @private
+     */
+    private get gain();
     /**
      * Node to connect to the input of the sub graph
      *
@@ -87,9 +92,9 @@ export class BypassNode {
      * @type {boolean}
      */
     get active(): boolean;
-    /** @inheritdoc */
+    /** @ignore */
     connect(...args: any[]): any;
-    /** @inheritdoc */
+    /** @ignore */
     disconnect(...args: any[]): any;
     #private;
 }

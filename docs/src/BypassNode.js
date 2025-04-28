@@ -3,6 +3,7 @@ import {
   BiquadFilterNode,
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
+import { ensureResumed } from './ensure-resumed.js';
 import { BypassNode } from '../../src/index.js';
 
 let buffer, src, bypass, audioContext;
@@ -52,9 +53,7 @@ export function template(example) {
     .buttons=${['play', 'stop']}
     value="stop"
     @change=${async e => {
-      if (audioContext.state !== 'running') {
-        await audioContext.resume();
-      }
+      await ensureResumed(audioContext);
 
       if (src) {
         src.stop();

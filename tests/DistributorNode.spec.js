@@ -94,7 +94,7 @@ describe('# DistributorNode', () => {
       assert.deepEqual(result.getChannelData(1), expectedRight);
     });
 
-    it.only('should use equal power curve by default', async () => {
+    it('should use equal power curve by default', async () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
       const src = new ConstantSourceNode(audioContext, { offset: 1 });
       const dryWet = new DistributorNode(audioContext, { ratio: 0.5 });

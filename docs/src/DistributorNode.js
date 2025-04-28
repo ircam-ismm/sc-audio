@@ -1,9 +1,10 @@
 import { html } from 'lit';
-import { DistributorNode } from '../../src/index.js';
 import {
   ConvolverNode,
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
+import { ensureResumed } from './ensure-resumed.js';
+import { DistributorNode } from '../../src/index.js';
 
 let buffer, src, dryWet, audioContext;
 
@@ -47,9 +48,7 @@ export function template(example) {
   <sc-transport
     .buttons=${['play', 'stop']}
     @change=${async e => {
-      if (audioContext.state !== 'running') {
-        await audioContext.resume();
-      }
+      await ensureResumed(audioContext);
 
       if (src) {
         src.stop();

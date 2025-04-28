@@ -16,7 +16,7 @@ import { isPlainObject } from '@ircam/sc-utils';
  *  [output]
  * ```
  *
- * @extends GainNode
+ * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {boolean} [options.active=false]
@@ -30,7 +30,7 @@ import { isPlainObject } from '@ircam/sc-utils';
  * import {
  *   AudioBufferLoader,
  *   BypassNode,
- * } from '../../src/index.js';
+ * } from '@ircam/sc-audio';
  *
  * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();

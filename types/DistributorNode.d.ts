@@ -12,7 +12,7 @@
  * [output 0]   [output 1]
  * ```
  *
- * @extends GainNode
+ * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {boolean} [options.ratio=0] - Initial ratio
@@ -28,7 +28,7 @@
  * import {
  *   AudioBufferLoader,
  *   DistributorNode,
- * } from '../../src/index.js';
+ * } from '@ircam/sc-audio';
  *
  * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();
@@ -57,16 +57,23 @@
  * dryWet.ratio.linearRampToValueAtTime(1, audioContext.currentTime + buffer.duration);
  * dryWet.ratio.exponentialRampToValueAtTime(0.001, audioContext.currentTime + buffer.duration * 2);
  */
-export class DistributorNode {
+export class DistributorNode extends AudioNode {
     constructor(context: any, { ratio, curve }?: {
         ratio?: number;
         curve?: Float32Array<ArrayBuffer>;
     }, ...args: any[]);
-    get numberOfOutputs(): number;
-    get ratio(): any;
-    /** @inheritdoc */
+    /** @private */
+    private get gain();
+    /**
+     * Amount of incoming signal to route between the two outputs:
+     * - a ratio of 0 is routed to output 0
+     * - a ratio of 1 is routed to output 1
+     * @type AudioParam
+     */
+    get ratio(): AudioParam;
+    /** @ignore */
     connect(destination: any, output?: number, input?: number, ...args: any[]): void;
-    /** @inheritdoc */
+    /** @ignore */
     disconnect(...args: any[]): void;
     #private;
 }

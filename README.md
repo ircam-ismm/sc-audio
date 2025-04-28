@@ -26,12 +26,12 @@ node docs/examples/BypassNode.js
 
 *   [BypassNode][1]
 *   [DistributorNode][2]
-*   [ScaledConstantSourceNode][3]
+*   [active][3]
 *   [VolumeNode][4]
 
 ## BypassNode
 
-**Extends GainNode**
+**Extends AudioNode**
 
 The `BypassNode` interface allows to wrap and bypass an audio sub graph.
 
@@ -63,7 +63,7 @@ import {
 import {
   AudioBufferLoader,
   BypassNode,
-} from '../../src/index.js';
+} from '@ircam/sc-audio';
 
 // in browsers, you will need to resume on a user gesture
 const audioContext = new AudioContext();
@@ -129,7 +129,7 @@ Type: [boolean][6]
 
 ## DistributorNode
 
-**Extends GainNode**
+**Extends AudioNode**
 
 The `DistributorNode` interface allows to distribute an input between two output.
 
@@ -162,7 +162,7 @@ import {
 import {
   AudioBufferLoader,
   DistributorNode,
-} from '../../src/index.js';
+} from '@ircam/sc-audio';
 
 // in browsers, you will need to resume on a user gesture
 const audioContext = new AudioContext();
@@ -192,8 +192,6 @@ dryWet.ratio.linearRampToValueAtTime(1, audioContext.currentTime + buffer.durati
 dryWet.ratio.exponentialRampToValueAtTime(0.001, audioContext.currentTime + buffer.duration * 2);
 ```
 
-### numberOfOutputs
-
 ### ratio
 
 Amount of incoming signal to route between the two outputs:
@@ -201,82 +199,76 @@ Amount of incoming signal to route between the two outputs:
 *   a ratio of 0 is routed to output 0
 *   a ratio of 1 is routed to output 1
 
-### connect
+## active
 
-#### Parameters
-
-*   `destination` &#x20;
-*   `output`   (optional, default `0`)
-*   `input`   (optional, default `0`)
-
-### disconnect
-
-#### Parameters
-
-*   `args` **...any**&#x20;
-
-## ScaledConstantSourceNode
-
-**Extends ConstantSourceNode**
-
-A ConstantSourceNode that scales it offset signal from given domain to a given
-range.
-
-In particular, this is useful to create an audio param signal to be piped into a
-WaveShaper node.
-
-Note that output values are not clamped.
-
-### Parameters
-
-*   `context` &#x20;
-*   `$1` **[Object][5]**  (optional, default `{}`)
-
-    *   `$1.inputStart`   (optional, default `0`)
-    *   `$1.inputEnd`   (optional, default `1`)
-    *   `$1.outputStart`   (optional, default `-1`)
-    *   `$1.outputEnd`   (optional, default `1`)
-    *   `$1.offset`   (optional, default `0`)
-
-### start
-
-#### Parameters
-
-*   `args` **...any**&#x20;
-
-### stop
-
-#### Parameters
-
-*   `args` **...any**&#x20;
-
-### connect
-
-#### Parameters
-
-*   `args` **...any**&#x20;
-
-### disconnect
-
-#### Parameters
-
-*   `args` **...any**&#x20;
+Defines wether the mute is active (muted) or not (pass trough).
 
 ## VolumeNode
 
-**Extends GainNode**
+**Extends AudioNode**
 
-The Volume, is similar to a gain but controllable in decibels
+The VolumeNode interface represents a change in volume controlled in dB.
+
+    [input]
+       │
+       │ control volume in dB
+       │
+    [output]
 
 ### Parameters
 
-*   `context` &#x20;
-*   `$1` **[Object][5]**  (optional, default `{}`)
+*   `context` **BaseAudioContext**&#x20;
+*   `options` **[Object][5]**  (optional, default `{}`)
 
-    *   `$1.volume`   (optional, default `0`)
-    *   `$1.min`   (optional, default `DEFAULT_MIN_DB`)
-    *   `$1.max`   (optional, default `DEFAULT_MAX_DB`)
-    *   `$1.curve`   (optional, default `null`)
+    *   `options.volume` **[number][8]**  (optional, default `0`)
+    *   `options.min` **[number][8]**  (optional, default `-80`)
+    *   `options.max` **[number][8]**  (optional, default `-80`)
+    *   `options.curve` **[number][8]**  (optional, default `null`)
+
+### Examples
+
+```javascript
+import {
+  AudioContext,
+  AudioBufferSourceNode,
+} from 'isomorphic-web-audio-api';
+import {
+  AudioBufferLoader,
+  VolumeNode,
+} from '@ircam/sc-audio';
+
+// in browsers, you will need to resume on a user gesture
+const audioContext = new AudioContext();
+// load an audio buffer
+const loader = new AudioBufferLoader(audioContext);
+const buffer = await loader.load('../assets/drum-loop.wav');
+
+// build graph and start source
+const fader = new VolumeNode(audioContext);
+const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+src.connect(fader).connect(audioContext.destination);
+
+// start source and ramp from -60 to 0 dB
+const now = audioContext.currentTime;
+src.start(now);
+fader.volume.setValueAtTime(-60, now);
+fader.volume.linearRampToValueAtTime(0, now + buffer.duration);
+```
+
+### min
+
+Minimum value of the volume in dB.
+
+### max
+
+Maximum value of the volume in dB.
+
+### curve
+
+Curve used to map from db to linear gain.
+
+Note that the returned sequence value is a copy of the actual curve used, then
+modifying the returned value won't affect the audio computation.
 
 ### volume
 
@@ -286,7 +278,7 @@ Represents the amount of gain in decibels to apply.
 
 [2]: #distributornode
 
-[3]: #scaledconstantsourcenode
+[3]: #active-1
 
 [4]: #volumenode
 

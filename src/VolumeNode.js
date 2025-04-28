@@ -34,7 +34,49 @@ const DEFAULT_MAX_DB = 12;
 const DEFAULT_VOLUME_WAVETABLE = computeWavetable(DEFAULT_WAVETABLE_SIZE, DEFAULT_MIN_DB, DEFAULT_MAX_DB);
 
 /**
- * The Volume, is similar to a gain but controllable in decibels
+ * The VolumeNode interface represents a change in volume controlled in dB.
+ *
+ * ```
+ * [input]
+ *    │
+ *    │ control volume in dB
+ *    │
+ * [output]
+ *
+ * @extends AudioNode
+ * @param {BaseAudioContext} context
+ * @param {Object} [options={}]
+ * @param {number} [options.volume=0]
+ * @param {number} [options.min=-80]
+ * @param {number} [options.max=-80]
+ * @param {number} [options.curve=null]
+ *
+ * @example
+ * import {
+ *   AudioContext,
+ *   AudioBufferSourceNode,
+ * } from 'isomorphic-web-audio-api';
+ * import {
+ *   AudioBufferLoader,
+ *   VolumeNode,
+ * } from '@ircam/sc-audio';
+ *
+ * // in browsers, you will need to resume on a user gesture
+ * const audioContext = new AudioContext();
+ * // load an audio buffer
+ * const loader = new AudioBufferLoader(audioContext);
+ * const buffer = await loader.load('../assets/drum-loop.wav');
+ *
+ * // build graph and start source
+ * const fader = new VolumeNode(audioContext);
+ * const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+ * src.connect(fader).connect(audioContext.destination);
+ *
+ * // start source and ramp from -60 to 0 dB
+ * const now = audioContext.currentTime;
+ * src.start(now);
+ * fader.volume.setValueAtTime(-60, now);
+ * fader.volume.linearRampToValueAtTime(0, now + buffer.duration);
  */
 export class VolumeNode extends GainNode {
   #volumeCurveController = null;
@@ -105,6 +147,14 @@ export class VolumeNode extends GainNode {
   }
 
   /**
+   * Shallow `super.gain` AudioParam
+   * @private
+   */
+  get gain() {
+    return undefined;
+  }
+
+  /**
    * Minimum value of the volume in dB.
    * @type number
    */
@@ -130,14 +180,6 @@ export class VolumeNode extends GainNode {
    */
   get curve() {
     return this.#dbWavetable.curve;
-  }
-
-  /**
-   * Shallow `super.gain` AudioParam
-   * @private
-   */
-  get gain() {
-    return undefined;
   }
 
   /**

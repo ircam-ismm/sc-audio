@@ -1,4 +1,4 @@
-export const DEFAULT_WAVETABLE_SIZE: 1024;
+export const DEFAULT_WAVETABLE_SIZE: 2048;
 /** @private */
 export const QUARTER_SIN_WAVETABLE: Float32Array<ArrayBuffer>;
 /** @private */

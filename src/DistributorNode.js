@@ -30,7 +30,7 @@ import {
  * [output 0]   [output 1]
  * ```
  *
- * @extends GainNode
+ * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {boolean} [options.ratio=0] - Initial ratio
@@ -46,7 +46,7 @@ import {
  * import {
  *   AudioBufferLoader,
  *   DistributorNode,
- * } from '../../src/index.js';
+ * } from '@ircam/sc-audio';
  *
  * // in browsers, you will need to resume on a user gesture
  * const audioContext = new AudioContext();

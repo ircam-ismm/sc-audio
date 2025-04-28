@@ -1,11 +1,11 @@
 /**
  * A ConstantSourceNode that scales it offset signal from given domain to a given
- * range.
+ * range. Note that output values are not clamped.
  *
  * In particular, this is useful to create an audio param signal to be piped into a
  * WaveShaper node.
  *
- * Note that output values are not clamped.
+ * @private
  */
 export class ScaledConstantSourceNode {
     constructor(context: any, { inputStart, inputEnd, outputStart, outputEnd, offset, }?: {
@@ -15,13 +15,13 @@ export class ScaledConstantSourceNode {
         outputEnd?: number;
         offset?: number;
     }, ...args: any[]);
-    /** @inheritdoc */
+    /** @ignore */
     start(...args: any[]): void;
-    /** @inheritdoc */
+    /** @ignore */
     stop(...args: any[]): void;
-    /** @inheritdoc */
+    /** @ignore */
     connect(...args: any[]): any;
-    /** @inheritdoc */
+    /** @ignore */
     disconnect(...args: any[]): any;
     #private;
 }

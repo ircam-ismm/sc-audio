@@ -14,11 +14,12 @@ const loader = new AudioBufferLoader(audioContext);
 const buffer = await loader.load('../assets/drum-loop.wav');
 
 // build graph and start source
-const fader = new VolumeNode(audioContext, { volume: -60, min: -60 });
+const fader = new VolumeNode(audioContext);
 const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
 src.connect(fader).connect(audioContext.destination);
 
-// start source and ramp to 0 dB
+// start source and ramp from -60 to 0 dB
 const now = audioContext.currentTime;
 src.start(now);
+fader.volume.setValueAtTime(-60, now);
 fader.volume.linearRampToValueAtTime(0, now + buffer.duration);
