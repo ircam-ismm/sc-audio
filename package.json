@@ -1,0 +1,12 @@
+{
+  "name": "@ircam/sc-audio-doc",
+  "type": "module",
+  "scripts": {
+    "build": "npx esbuild src/index.js --bundle --format=esm --sourcemap --outfile=build/bundle.js",
+    "build:prod": "npm run copy:html && npx esbuild src/index.js --bundle --minify --format=esm --outfile=build/bundle.js",
+    "copy:html": "node ./bin/create-html-files.js",
+    "watch": "npx esbuild src/index.js --bundle --watch --sourcemap --format=esm --outfile=build/bundle.js",
+    "dev": "npm-run-all build --parallel start watch",
+    "start": "serve . --config ./serve.json --listen 5000"
+  }
+}
