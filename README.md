@@ -26,7 +26,7 @@ node docs/examples/BypassNode.js
 
 *   [BypassNode][1]
 *   [DistributorNode][2]
-*   [active][3]
+*   [MuteNode][3]
 *   [VolumeNode][4]
 
 ## BypassNode
@@ -127,6 +127,16 @@ the sub graph and flows directly to the output.
 
 Type: [boolean][6]
 
+### setActiveAtTime
+
+Activate or deactivate the `BypassNode` at given time.
+
+#### Parameters
+
+*   `active` **[boolean][6]** whether the bypass is active or not
+*   `when` **[number][7]** time at which the change should be applied. In audio
+    context current time coordinates
+
 ## DistributorNode
 
 **Extends AudioNode**
@@ -148,7 +158,7 @@ It can be used for example to create dry / wet controls.
 *   `options` **[Object][5]**  (optional, default `{}`)
 
     *   `options.ratio` **[boolean][6]** Initial ratio (optional, default `0`)
-    *   `options.curve` **[Array][7]<[number][8]>** Curve to apply for the transition.
+    *   `options.curve` **[Array][8]<[number][7]>** Curve to apply for the transition.
         Defaults to equal power curve. (optional, default `null`)
 
 ### Examples
@@ -199,9 +209,68 @@ Amount of incoming signal to route between the two outputs:
 *   a ratio of 0 is routed to output 0
 *   a ratio of 1 is routed to output 1
 
-## active
+## MuteNode
 
-Defines wether the mute is active (muted) or not (pass trough).
+**Extends AudioNode**
+
+The MuteNode interface allows to mute a given input.
+
+    [input]
+       │
+       │ mute
+       │
+    [output]
+
+### Parameters
+
+*   `context` **BaseAudioContext**&#x20;
+*   `options` **[Object][5]**  (optional, default `{}`)
+
+    *   `options.active` **[boolean][6]**  (optional, default `false`)
+
+### Examples
+
+```javascript
+import {
+  AudioContext,
+  AudioBufferSourceNode,
+} from 'isomorphic-web-audio-api';
+import {
+  AudioBufferLoader,
+  MuteNode,
+} from '../../src/index.js';
+
+// in browsers, you will need to resume on a user gesture
+const audioContext = new AudioContext();
+// load an audio buffer
+const loader = new AudioBufferLoader(audioContext);
+const buffer = await loader.load('../assets/drum-loop.wav');
+
+// build graph and start source
+const mute = new MuteNode(audioContext, { active: false });
+const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+src.connect(mute).connect(audioContext.destination);
+src.start();
+
+// mute / unmute every seconds
+setInterval(() => mute.active = !mute.active, 1000);
+```
+
+### active
+
+Defines whether the mute is active (muted) or not (pass trough).
+
+Type: [boolean][6]
+
+### setActiveAtTime
+
+Activate or deactivate the `MuteNode` at given time.
+
+#### Parameters
+
+*   `active` **[boolean][6]** whether the bypass is active or not
+*   `when` **[number][7]** time at which the change should be applied. In audio
+    context current time coordinates
 
 ## VolumeNode
 
@@ -220,10 +289,10 @@ The VolumeNode interface represents a change in volume controlled in dB.
 *   `context` **BaseAudioContext**&#x20;
 *   `options` **[Object][5]**  (optional, default `{}`)
 
-    *   `options.volume` **[number][8]**  (optional, default `0`)
-    *   `options.min` **[number][8]**  (optional, default `-80`)
-    *   `options.max` **[number][8]**  (optional, default `-80`)
-    *   `options.curve` **[number][8]**  (optional, default `null`)
+    *   `options.volume` **[number][7]**  (optional, default `0`)
+    *   `options.min` **[number][7]**  (optional, default `-80`)
+    *   `options.max` **[number][7]**  (optional, default `-80`)
+    *   `options.curve` **[number][7]**  (optional, default `null`)
 
 ### Examples
 
@@ -278,7 +347,7 @@ Represents the amount of gain in decibels to apply.
 
 [2]: #distributornode
 
-[3]: #active-1
+[3]: #mutenode
 
 [4]: #volumenode
 
@@ -286,9 +355,9 @@ Represents the amount of gain in decibels to apply.
 
 [6]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
-[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
 <!-- apistop -->
 

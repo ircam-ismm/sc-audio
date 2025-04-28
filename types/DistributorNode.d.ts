@@ -58,7 +58,7 @@
  * dryWet.ratio.exponentialRampToValueAtTime(0.001, audioContext.currentTime + buffer.duration * 2);
  */
 export class DistributorNode extends AudioNode {
-    constructor(context: any, { ratio, curve }?: {
+    constructor(context: any, { ratio, curve, }?: {
         ratio?: number;
         curve?: Float32Array<ArrayBuffer>;
     }, ...args: any[]);

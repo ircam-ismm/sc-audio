@@ -84,7 +84,7 @@ export class BypassNode extends AudioNode {
      * bypass.subGraphInput.connect(filter).connect(bypass.subGraphOutput);
      */
     get subGraphOutput(): GainNode;
-    set active(value: boolean);
+    set active(active: boolean);
     /**
      * Defines if the Bypass is active, i.e. if true the signal doesn't pass through
      * the sub graph and flows directly to the output.
@@ -92,6 +92,14 @@ export class BypassNode extends AudioNode {
      * @type {boolean}
      */
     get active(): boolean;
+    /**
+     * Activate or deactivate the `BypassNode` at given time.
+     *
+     * @param {boolean} active - whether the bypass is active or not
+     * @param {number} when - time at which the change should be applied. In audio
+     *  context current time coordinates
+     */
+    setActiveAtTime(active: boolean, when: number): void;
     /** @ignore */
     connect(...args: any[]): any;
     /** @ignore */
