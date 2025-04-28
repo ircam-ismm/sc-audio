@@ -10,7 +10,7 @@ import {
 } from 'isomorphic-web-audio-api';
 
 import {
-  ScaledConstantSourceNode
+  ScaledConstantSourceNode,
 } from './ScaledConstantSourceNode.js';
 
 import { DEFAULT_WAVETABLE_SIZE } from './utils.js';

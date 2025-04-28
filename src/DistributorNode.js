@@ -12,7 +12,7 @@ import {
   QUARTER_SIN_WAVETABLE,
 } from './utils.js';
 import {
-  ScaledConstantSourceNode
+  ScaledConstantSourceNode,
 } from './ScaledConstantSourceNode.js';
 
 
@@ -82,7 +82,7 @@ export class DistributorNode extends GainNode {
 
   constructor(context, {
     ratio = 0,
-    curve = QUARTER_SIN_WAVETABLE
+    curve = QUARTER_SIN_WAVETABLE,
   } = {}) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError('Failed to construct DistributorNode: Argument 1 is not an instance of BaseAudioContext');
@@ -137,7 +137,7 @@ export class DistributorNode extends GainNode {
 
   /** @ignore */
   get numberOfOutputs() {
-      return 2;
+    return 2;
   }
 
   /**

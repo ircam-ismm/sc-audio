@@ -1,10 +1,10 @@
 import {
   BaseAudioContext,
   ConstantSourceNode,
-  GainNode
+  GainNode,
 } from 'isomorphic-web-audio-api';
 import {
-  isPlainObject
+  isPlainObject,
 } from '@ircam/sc-utils';
 
 /**
