@@ -88,7 +88,7 @@ export class PlaceholderNode extends GainNode {
     this.#output = new GainNode(context, { gain: 1 });
 
     if (node !== null) {
-      this.node = this.node;
+      this.node = node;
     }
   }
 
