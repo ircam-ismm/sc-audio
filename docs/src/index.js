@@ -11,7 +11,27 @@ const audioContext = new AudioContext();
 const loader = new AudioBufferLoader(audioContext);
 
 // list of pages
-import { pages } from './infos.js';
+// list of pages
+const arrToObject = arr => {
+  return arr.reduce((acc, value) => {
+    acc[value] = value;
+    return acc;
+  }, {})
+};
+// export const routing = ;
+
+const pages = {
+  'intro': {
+    'Home': 'home',
+  },
+  'routing': arrToObject([
+    'BypassNode',
+    'DistributorNode',
+    'MuteNode',
+    'PlaceholderNode',
+    'VolumeNode',
+  ].sort()),
+};
 
 function setTheme(name) {
   switch (name) {

@@ -6,6 +6,10 @@ import {
   GainNode,
 } from 'isomorphic-web-audio-api';
 
+import {
+  SET_TARGET_DEFAULT_TIME_CONSTANT,
+} from './utils.js';
+
 /**
  * The MuteNode interface allows to mute a given input.
  *
@@ -105,9 +109,8 @@ export class MuteNode extends GainNode {
 
     if (active !== this.#active) {
       this.#active = active;
-
       when = Math.max(when, this.context.currentTime);
-      super.gain.setTargetAtTime(this.#active ? 0 : 1, when, 0.01);
+      super.gain.setTargetAtTime(this.#active ? 0 : 1, when, SET_TARGET_DEFAULT_TIME_CONSTANT);
     }
   }
 }

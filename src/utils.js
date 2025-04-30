@@ -1,7 +1,5 @@
-
-// sine / cosine
+/** @private */
 export const DEFAULT_WAVETABLE_SIZE = 2048;
-// protected values
 /** @private */
 export const QUARTER_SIN_WAVETABLE = new Float32Array(DEFAULT_WAVETABLE_SIZE);
 /** @private */
@@ -12,3 +10,6 @@ for (let i = 0; i < DEFAULT_WAVETABLE_SIZE; i++) {
   QUARTER_SIN_WAVETABLE[i] = Math.sin(phase);
   QUARTER_COS_WAVETABLE[i] = Math.cos(phase);
 }
+
+/** @private */
+export const SET_TARGET_DEFAULT_TIME_CONSTANT = 0.003;

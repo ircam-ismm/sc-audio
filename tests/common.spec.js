@@ -8,6 +8,7 @@ const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 4800
   'BypassNode',
   'DistributorNode',
   'MuteNode',
+  'PlaceholderNode',
   'ScaledConstantSourceNode',
   'VolumeNode',
 ].forEach(name => {

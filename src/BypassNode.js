@@ -1,6 +1,10 @@
 import { BaseAudioContext, GainNode } from 'isomorphic-web-audio-api';
 import { isPlainObject } from '@ircam/sc-utils';
 
+import {
+  SET_TARGET_DEFAULT_TIME_CONSTANT,
+} from './utils.js';
+
 /**
  * The `BypassNode` interface allows to wrap and bypass an audio sub graph.
  *
@@ -155,8 +159,8 @@ export class BypassNode extends GainNode {
       this.#active = active;
 
       when = Math.max(when, this.context.currentTime);
-      this.#bypass.gain.setTargetAtTime(this.#active ? 1 : 0, when, 0.01);
-      this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, when, 0.01);
+      this.#bypass.gain.setTargetAtTime(this.#active ? 1 : 0, when, SET_TARGET_DEFAULT_TIME_CONSTANT);
+      this.#subGraphIn.gain.setTargetAtTime(this.#active ? 0 : 1, when, SET_TARGET_DEFAULT_TIME_CONSTANT);
     }
   }
 

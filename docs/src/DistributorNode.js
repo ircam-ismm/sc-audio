@@ -10,7 +10,7 @@ let buffer, src, dryWet, convolver, audioContext;
 
 export async function enter(context, loader) {
   audioContext = context;
-  const ir = await loader.load('./assets/parking-garage-response.wav');
+  const ir = await loader.load('./assets/room-large.wav');
   buffer = await loader.load('./assets/drum-loop.wav');
 
   convolver = new ConvolverNode(audioContext, { buffer: ir });
