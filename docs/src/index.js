@@ -20,32 +20,12 @@ import '@ircam/sc-components';
 import { AudioContext } from 'isomorphic-web-audio-api';
 import { AudioBufferLoader } from '@ircam/sc-loader';
 
+import { pages } from './pages.js';
+
 // for display in title and generating url
 const libName = 'sc-audio';
 const audioContext = new AudioContext();
 const loader = new AudioBufferLoader(audioContext);
-
-// list of pages
-// list of pages
-const arrToObject = arr => {
-  return arr.reduce((acc, value) => {
-    acc[value] = value;
-    return acc;
-  }, {})
-};
-
-export const pages = {
-  'intro': {
-    'Home': 'home',
-  },
-  'routing': arrToObject([
-    'BypassNode',
-    'DistributorNode',
-    'MuteNode',
-    'PlaceholderNode',
-    'VolumeNode',
-  ].sort()),
-};
 
 hljs.registerLanguage('javascript', javascriptLang);
 hljs.registerLanguage('js', javascriptLang);
