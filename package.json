@@ -37,7 +37,7 @@
     }
   },
   "scripts": {
-    "api": "node ./bin/jsdoc-to-md.js",
+    "api": "node ./docs/bin/jsdoc-to-md.js",
     "build": "npx esbuild src/index.js --bundle --minify --format=esm --outfile=build/bundle.js",
     "doc": "npm run api && cd docs && npm run dev",
     "doc:prod": "npm run api && cd docs && npm run build:prod",

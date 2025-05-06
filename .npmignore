@@ -1,4 +1,10 @@
 tsconfig.json
+eslint.config.js
+.editorconfig
+NOTES.md
+tsconfig.json
 
-
+.github
+bin
+docs
 tests

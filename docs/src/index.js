@@ -33,9 +33,8 @@ const arrToObject = arr => {
     return acc;
   }, {})
 };
-// export const routing = ;
 
-const pages = {
+export const pages = {
   'intro': {
     'Home': 'home',
   },
