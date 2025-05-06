@@ -12,7 +12,7 @@ import {
 const audioContext = new AudioContext();
 // load an audio buffer
 const loader = new AudioBufferLoader(audioContext);
-const ir = await loader.load('../assets/parking-garage-response.wav');
+const ir = await loader.load('../assets/room-large.wav');
 const buffer = await loader.load('../assets/drum-loop.wav');
 
 // create the graph

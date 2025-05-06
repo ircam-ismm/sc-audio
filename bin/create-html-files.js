@@ -1,8 +1,6 @@
-// copy index.html to every pages to avoid the 404.html (and problems) when
-// deploying on github
+// copy `index.html` to every pages to avoid 404 errors when deploying on github
 import fs from 'node:fs';
-
-import { pages } from '../src/infos.js';
+import { pages } from '../src/pages.js';
 
 // flatten pages
 const list = [];

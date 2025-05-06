@@ -1,12 +1,11 @@
-// list of pages
 const arrToObject = arr => {
   return arr.reduce((acc, value) => {
     acc[value] = value;
     return acc;
   }, {})
 };
-// export const routing = ;
 
+// this is used by the
 export const pages = {
   'intro': {
     'Home': 'home',
@@ -15,6 +14,7 @@ export const pages = {
     'BypassNode',
     'DistributorNode',
     'MuteNode',
+    'PlaceholderNode',
     'VolumeNode',
   ].sort()),
 };

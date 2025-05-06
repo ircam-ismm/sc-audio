@@ -22,6 +22,24 @@ body {
 /*  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;*/
 }
 
+pre {
+  margin: 0;
+}
+
+pre, code {
+  border-radius: 3px;
+}
+
+/* highlight.js monokai theme */
+pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{background:#23241f;color:#f8f8f2}.hljs-subst,.hljs-tag{color:#f8f8f2}.hljs-emphasis,.hljs-strong{color:#a8a8a2}.hljs-bullet,.hljs-link,.hljs-literal,.hljs-number,.hljs-quote,.hljs-regexp{color:#ae81ff}.hljs-code,.hljs-section,.hljs-selector-class,.hljs-title{color:#a6e22e}.hljs-strong{font-weight:700}.hljs-emphasis{font-style:italic}.hljs-attr,.hljs-keyword,.hljs-name,.hljs-selector-tag{color:#f92672}.hljs-attribute,.hljs-symbol{color:#66d9ef}.hljs-class .hljs-title,.hljs-params,.hljs-title.class_{color:#f8f8f2}.hljs-addition,.hljs-built_in,.hljs-selector-attr,.hljs-selector-id,.hljs-selector-pseudo,.hljs-string,.hljs-template-variable,.hljs-type,.hljs-variable{color:#e6db74}.hljs-comment,.hljs-deletion,.hljs-meta{color:#75715e}
+
+pre code.hljs {
+  font-size: 12px;
+  padding: 1em;
+  line-height: calc(12px + 4px);
+  max-width: 900px;
+}
+
 header {
   height: var(--header-height);
 /*  background-color: rgb(22, 22, 24);*/
@@ -180,9 +198,13 @@ header #toggle-menu {
 }
 
 #main section h2 {
-  margin-top: 18px;
+  margin-top: 40px;
   margin-bottom: 30px;
   font-size: 2.4rem;
+}
+
+#main section h2:first-of-type {
+  margin-top: 18px;
 }
 
 #main section h3 {
@@ -197,6 +219,11 @@ header #toggle-menu {
   font-size: 1.15rem;
   line-height: 1.9rem;
   max-width: 900px;
+}
+
+#main ul li {
+  font-size: 1.15rem;
+  line-height: 1.9rem;
 }
 
 #main section .key {
