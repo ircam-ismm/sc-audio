@@ -1,6 +1,7 @@
 import { html } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
-  BiquadFilterNode,
+  ConvolverNode,
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
 import { ensureResumed } from './ensure-resumed.js';
@@ -30,11 +31,11 @@ export function exit() {
   placeholder.disconnect();
 }
 
-export function template(example) {
+export function template(example, api) {
   return html`
 <h2>PlaceholderNode</h2>
 
-<p>The PlaceholderNode interface represents an audio node that wraps another node and can replace it by cross-fading between the old and the new one.</p>
+<p>The PlaceholderNode interface represents an audio node that wraps another node and can replace it seamlessly by cross-fading between the old and the new one.</p>
 
 <p>In particular, it allows to wrap nodes which whose parameters can't be updated dynamically, e.g. WaveshaperNode, ConvolverNode, to update them without producing clicks and pops.</p>
 
@@ -42,7 +43,7 @@ export function template(example) {
   [input]
      │
      │
-[placeholder] can be replace with another node
+[placeholder] replace wrapped node at runtime
      │
      │
  [output]
@@ -80,5 +81,7 @@ export function template(example) {
 
 <h3>Example</h3>
 <sc-code-example>${example}</sc-code-example>
+
+${unsafeHTML(api)}
   `;
 }

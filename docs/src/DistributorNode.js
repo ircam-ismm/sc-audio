@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
   ConvolverNode,
   AudioBufferSourceNode,
@@ -30,7 +31,7 @@ export function exit() {
   dryWet.disconnect();
 }
 
-export function template(example) {
+export function template(example, api) {
   return html`
 <h2>DistributorNode</h2>
 
@@ -78,5 +79,7 @@ export function template(example) {
 
 <h3>Example</h3>
 <sc-code-example>${example}</sc-code-example>
+
+${unsafeHTML(api)}
   `;
 }

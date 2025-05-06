@@ -37,10 +37,10 @@
     }
   },
   "scripts": {
-    "api": "jsdoc-to-readme --src src/*.js --heading-depth 2",
+    "api": "node ./bin/jsdoc-to-md.js",
     "build": "npx esbuild src/index.js --bundle --minify --format=esm --outfile=build/bundle.js",
-    "doc": "cd docs && npm run dev",
-    "doc:prod": "cd docs && npm run build:prod",
+    "doc": "npm run api && cd docs && npm run dev",
+    "doc:prod": "npm run api && cd docs && npm run build:prod",
     "lint": "eslint ./src/*.js",
     "preversion": "npm run build && npm run api && npm run types && git add -A && git commit -m 'docs: rebuild' --allow-empty",
     "test": "mocha tests/*.spec.js",
@@ -51,8 +51,10 @@
     "@ircam/eslint-config": "^2.0.1",
     "@ircam/sc-components": "^3.3.4",
     "chai": "^5.2.0",
+    "documentation": "^14.0.3",
     "esbuild": "^0.25.3",
     "eslint": "^9.25.1",
+    "jsdoc-to-markdown": "^9.1.1",
     "jsdoc-to-readme": "^2.0.0",
     "mocha": "^11.1.0",
     "npm-run-all": "^4.1.5",
@@ -62,6 +64,9 @@
   "dependencies": {
     "@ircam/sc-loader": "^1.1.0",
     "@ircam/sc-utils": "^1.10.1",
-    "isomorphic-web-audio-api": "^1.0.2"
+    "hljs": "^6.2.3",
+    "isomorphic-web-audio-api": "^1.0.2",
+    "marked": "^15.0.11",
+    "marked-highlight": "^2.2.1"
   }
 }

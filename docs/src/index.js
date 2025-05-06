@@ -1,5 +1,20 @@
 import { html, render } from 'lit/html.js';
 import { map } from 'lit/directives/map.js';
+import { Marked } from "marked";
+import { markedHighlight } from "marked-highlight";
+import hljs from 'highlight.js/lib/core';
+import javascriptLang from 'highlight.js/lib/languages/javascript';
+import typescriptLang from 'highlight.js/lib/languages/typescript';
+import htmlLang from 'highlight.js/lib/languages/xml';
+import cssLang from 'highlight.js/lib/languages/css';
+import jsonLang from 'highlight.js/lib/languages/json';
+import markdownLang from 'highlight.js/lib/languages/markdown';
+import yamlLang from 'highlight.js/lib/languages/yaml';
+import rustLang from 'highlight.js/lib/languages/rust';
+import shellLang from 'highlight.js/lib/languages/shell';
+import bashLang from 'highlight.js/lib/languages/bash';
+import textLang from 'highlight.js/lib/languages/plaintext';
+
 import { isFunction } from '@ircam/sc-utils';
 import '@ircam/sc-components';
 import { AudioContext } from 'isomorphic-web-audio-api';
@@ -33,6 +48,37 @@ const pages = {
   ].sort()),
 };
 
+hljs.registerLanguage('javascript', javascriptLang);
+hljs.registerLanguage('js', javascriptLang);
+hljs.registerLanguage('typescript', typescriptLang);
+hljs.registerLanguage('ts', typescriptLang);
+hljs.registerLanguage('rust', rustLang);
+hljs.registerLanguage('rs', rustLang);
+hljs.registerLanguage('html', htmlLang);
+hljs.registerLanguage('css', cssLang);
+hljs.registerLanguage('json', jsonLang);
+hljs.registerLanguage('markdown', markdownLang);
+hljs.registerLanguage('md', markdownLang);
+hljs.registerLanguage('plaintext', textLang);
+hljs.registerLanguage('text', textLang);
+hljs.registerLanguage('txt', textLang);
+hljs.registerLanguage('yaml', yamlLang);
+hljs.registerLanguage('yml', yamlLang);
+hljs.registerLanguage('shell', shellLang);
+hljs.registerLanguage('sh', shellLang);
+hljs.registerLanguage('bash', bashLang);
+
+const marked = new Marked(
+  markedHighlight({
+	emptyLangClass: 'hljs',
+    langPrefix: 'hljs language-',
+    highlight(code, lang, info) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+  })
+);
+
 function setTheme(name) {
   switch (name) {
     case 'light':
@@ -51,6 +97,26 @@ setTheme('dark');
 // current page module
 let current = null;
 let prefix = null;
+
+async function fetchExample(page) {
+  const res = await fetch(`./examples/${page}.js`);
+  const rawExample = await res.text();
+  const localImport = new RegExp('../../src/index.js', 'g');
+  const example = rawExample.replace(localImport, `@ircam/${libName}`);
+
+  return example;
+}
+
+async function fetchAPI(page) {
+  const res = await fetch(`./api/${page}.js`);
+  const rawMd = await res.text();
+  // replace the title from documentation.js to `## API`
+  const title =new RegExp(`## ${page}`, 'm');
+  const md = rawMd.replace(title, '## API')
+  const html = marked.parse(md);
+
+  return html;
+}
 
 async function setContent(pages, page) {
   // fallback to homepage if page is not found
@@ -138,13 +204,12 @@ async function setContent(pages, page) {
     await current.enter(audioContext, loader);
   }
 
-  const res = await fetch(`./examples/${page}.js`);
-  const rawExample = await res.text();
-  const localImport = new RegExp('../../src/index.js', 'g');
-  const example = rawExample.replace(localImport, `@ircam/${libName}`);
+  const [example, api] = await Promise.all([fetchExample(page), fetchAPI(page)]);
 
-  const template = isFunction(current.template) ? current.template(example) : current.template;
+  const template = isFunction(current.template) ? current.template(example, api) : current.template;
   render(template, document.querySelector('#main > section'));
+
+  hljs.highlightAll();
 }
 
 (async function main() {

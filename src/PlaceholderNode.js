@@ -12,60 +12,10 @@ import {
 } from './utils.js';
 
 /**
- * The PlaceholderNode interface represents an audio node that wraps another node and
- * can replace it by cross-fading between the old and the new one.
- *
- * In particular, it allows to wrap nodes which whose parameters can't be updated dynamically,
- * e.g. WaveshaperNode, ConvolverNode, to update them without producing clicks and
- * pops.
- *
- * ```
- *   [input]
- *      │
- *      │
- * [placeholder] can be replace with another node
- *      │
- *      │
- *  [output]
- * ```
- *
  * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {AudioNode} [options.node=null]
- *
- * @example
- * import {
- *   AudioContext,
- *   AudioBufferSourceNode,
- *   ConvolverNode,
- * } from 'isomorphic-web-audio-api';
- * import {
- *   AudioBufferLoader,
- *   PlaceholderNode,
- * } from '../../src/index.js';
- *
- * // in browsers, you will need to resume on a user gesture
- * const audioContext = new AudioContext();
- * const loader = new AudioBufferLoader(audioContext);
- * // load two IRs and an audio buffer
- * const ir1 = await loader.load('../assets/plate-small.wav');
- * const ir2 = await loader.load('../assets/room-large.wav');
- * const buffer = await loader.load('../assets/drum-loop.wav');
- * // create graph
- * const placeholder = new PlaceholderNode(audioContext);
- * const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
- * src.connect(placeholder).connect(audioContext.destination);
- * src.start();
- * // create two convolvers and switch them regularly in the placeholder
- * const convolver1 = new ConvolverNode(audioContext, { buffer: ir1 });
- * const convolver2 = new ConvolverNode(audioContext, { buffer: ir2 });
- * placeholder.node = convolver1;
- * // bypass the lowpass filter on each sample loop
- * setInterval(() => {
- *   const convolver = placeholder.node === convolver1 ? convolver2 : convolver1;
- *   placeholder.node = convolver;
- * }, buffer.duration * 1000 - 10);
  */
 export class PlaceholderNode extends GainNode {
   #inner = null;
@@ -98,7 +48,8 @@ export class PlaceholderNode extends GainNode {
   }
 
   /**
-   * Instance of the wrapped AudioNode
+   * Wrapped AudioNode
+   * @type {AudioNode}
    */
   get node() {
     return this.#inner;
@@ -113,13 +64,17 @@ export class PlaceholderNode extends GainNode {
   }
 
   /**
+   * Replace the wrapped AudioNode at given time.
    *
-   * Note that using this method in an wrong order according to the timeline, e.g.:
+   * <i>Note that using this method in an wrong order according to the timeline will result in undefined behavior, e.g.:</i>
+   * ```js
+   * wrapper.setNodeAtTime(node1, audioContext.currentTime + 2);
+   * wrapper.setNodeAtTime(node2, audioContext.currentTime + 1);
    * ```
-   * wrapper.setNodeAtTime(node1, 2);
-   * wrapper.setNodeAtTime(node2, 1);
-   * ```
-   * will result in undefined behavior
+   *
+   * @param {AudioNode} node - AudioNode to be wrapped.
+   * @param {number} when - Time at which the change should be applied. In audio
+   *  context current time coordinates.
    */
   setNodeAtTime(node, when) {
     if (!(node instanceof AudioNode)) {

@@ -17,6 +17,7 @@ import { DEFAULT_WAVETABLE_SIZE } from './utils.js';
 
 // [-80, 12] dB
 
+/** @private */
 function computeWavetable(size, min, max) {
   const wavetable = new Float32Array(size);
 
@@ -29,26 +30,20 @@ function computeWavetable(size, min, max) {
   return wavetable;
 }
 
+/** @private */
 const DEFAULT_MIN_DB = -80;
+/** @private */
 const DEFAULT_MAX_DB = 12;
+/** @private */
 const DEFAULT_VOLUME_WAVETABLE = computeWavetable(DEFAULT_WAVETABLE_SIZE, DEFAULT_MIN_DB, DEFAULT_MAX_DB);
 
 /**
- * The VolumeNode interface represents a change in volume controlled in dB.
- *
- * ```
- * [input]
- *    │
- *    │ control volume in dB
- *    │
- * [output]
- *
  * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {number} [options.volume=0]
  * @param {number} [options.min=-80]
- * @param {number} [options.max=-80]
+ * @param {number} [options.max=12]
  * @param {number} [options.curve=null]
  *
  * @example
@@ -156,7 +151,8 @@ export class VolumeNode extends GainNode {
 
   /**
    * Minimum value of the volume in dB.
-   * @type number
+   *
+   * @type {number}
    */
   get min() {
     return this.#min;
@@ -164,7 +160,8 @@ export class VolumeNode extends GainNode {
 
   /**
    * Maximum value of the volume in dB.
-   * @type number
+   *
+   * @type {number}
    */
   get max() {
     return this.#max;
@@ -176,15 +173,16 @@ export class VolumeNode extends GainNode {
    * Note that the returned sequence value is a copy of the actual curve used, then
    * modifying the returned value won't affect the audio computation.
    *
-   * @type Float32Array
+   * @type {Float32Array}
    */
   get curve() {
     return this.#dbWavetable.curve;
   }
 
   /**
-   * Represents the amount of gain in decibels to apply.
-   * @type AudioParam
+   * An AudioParam that Represents the amount of gain in decibels to apply.
+   *
+   * @type {AudioParam}
    */
   get volume() {
     return this.#volumeCurveController.offset;

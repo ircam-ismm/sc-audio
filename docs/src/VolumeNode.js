@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
@@ -23,7 +24,7 @@ export function exit() {
   fader.disconnect();
 }
 
-export function template(example) {
+export function template(example, api) {
   return html`
 <h2>VolumeNode</h2>
 
@@ -71,5 +72,7 @@ export function template(example) {
 
 <h3>Example</h3>
 <sc-code-example>${example}</sc-code-example>
+
+${unsafeHTML(api)}
   `;
 }
