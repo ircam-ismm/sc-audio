@@ -43,7 +43,7 @@
     "doc:prod": "npm run api && cd docs && npm run build:prod",
     "lint": "eslint ./src/*.js",
     "preversion": "npm run build && npm run api && npm run types && git add -A && git commit -m 'docs: rebuild' --allow-empty",
-    "test": "mocha tests/*.spec.js",
+    "test": "npm run lint && mocha tests/*.spec.js",
     "test:only": "mocha",
     "types": "rm -rf types && tsc"
   },
