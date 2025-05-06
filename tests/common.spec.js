@@ -6,6 +6,7 @@ const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 4800
 
 [
   'BypassNode',
+  'CollectorNode',
   'DistributorNode',
   'MuteNode',
   'PlaceholderNode',

@@ -56,6 +56,34 @@ Activate or deactivate the `BypassNode` at given time.
 *   `when` **[number][3]** time at which the change should be applied. In audio
     context current time coordinates
 
+## CollectorNode
+
+**Extends AudioNode**
+
+### Parameters
+
+*   `context` **BaseAudioContext**&#x20;
+*   `options` **[Object][1]**  (optional, default `{}`)
+
+    *   `options.ratio` **[boolean][2]** Initial ratio (optional, default `0`)
+    *   `options.curve` **[Array][4]<[number][3]>** Curve to apply for the transition.
+        Defaults to equal power curve. (optional, default `null`)
+
+### inputs
+
+An array of length 2, containing the 2 inputs of the CollectorNode.
+
+Type: [Array][4]\<GainNode>
+
+### ratio
+
+An AudioParam that controls the amount of incoming signal from the inputs to be routed to the output:
+
+*   `inputs[0]` is at maximum volume when ratio is set to `0`
+*   `inputs[1]` is at maximum volume when ratio is set to `1`
+
+Type: AudioParam
+
 ## DistributorNode
 
 **Extends AudioNode**

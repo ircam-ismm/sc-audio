@@ -25,12 +25,7 @@ describe('# DistributorNode', () => {
       assert.equal(node.ratio.value, 0.5);
     });
 
-    it('should throw if ratio is no finite', () => {
-      const audioContext = new OfflineAudioContext(audioContextOptions);
-      assert.throws(() => new DistributorNode(audioContext, { ratio: NaN }));
-    });
-
-    it('should throw if ratio is no finite', () => {
+    it('should throw if ratio is not finite', () => {
       const audioContext = new OfflineAudioContext(audioContextOptions);
       assert.throws(() => new DistributorNode(audioContext, { ratio: NaN }));
     });
