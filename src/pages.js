@@ -12,6 +12,7 @@ export const pages = {
   },
   'routing': arrToObject([
     'BypassNode',
+    'CollectorNode',
     'DistributorNode',
     'MuteNode',
     'PlaceholderNode',
