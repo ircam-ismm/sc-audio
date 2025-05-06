@@ -3579,7 +3579,7 @@ Minimum version required to store current data is: `+r+`.
 <sc-code-example>${n}</sc-code-example>
 
 ${Ie(e)}
-  `}var kP,wn,bs,Ag,wr,_P=y(()=>{B();Ft();ft();vn();gs()});var XP={};Si(XP,{enter:()=>rM,exit:()=>oM,template:()=>aM});async function rM(n,e){ys=n,TP=await e.load("../assets/drum-loop.wav"),EP=await e.load("../assets/clar-bass-mono.wav"),Aa=new Ta(ys,{ratio:0}),Aa.connect(ys.destination)}function oM(){src&&src.stop(),convolver.disconnect(),dryWet.disconnect()}function aM(n,e){return x`
+  `}var kP,wn,bs,Ag,wr,_P=y(()=>{B();Ft();ft();vn();gs()});var XP={};Si(XP,{enter:()=>rM,exit:()=>oM,template:()=>aM});async function rM(n,e){ys=n,TP=await e.load("./assets/drum-loop.wav"),EP=await e.load("./assets/clar-bass-mono.wav"),Aa=new Ta(ys,{ratio:0}),Aa.connect(ys.destination)}function oM(){src&&src.stop(),convolver.disconnect(),dryWet.disconnect()}function aM(n,e){return x`
 <h2>CollectorNode</h2>
 
 <p>The CollectorNode interface allows to collect two multichannel inputs and mix them in an input according to given ratio.</p>

@@ -11,8 +11,8 @@ let buffer0, buffer1, src0, src1, mixer, audioContext;
 
 export async function enter(context, loader) {
   audioContext = context;
-  buffer0 = await loader.load('../assets/drum-loop.wav');
-  buffer1 = await loader.load('../assets/clar-bass-mono.wav');
+  buffer0 = await loader.load('./assets/drum-loop.wav');
+  buffer1 = await loader.load('./assets/clar-bass-mono.wav');
 
   // create the graph
   mixer = new CollectorNode(audioContext, { ratio: 0 });
