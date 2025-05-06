@@ -2,7 +2,6 @@ import {
   BaseAudioContext,
   GainNode,
   WaveShaperNode,
-  AudioNode,
 } from 'isomorphic-web-audio-api';
 import {
   isPlainObject,

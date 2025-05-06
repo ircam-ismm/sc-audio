@@ -4,7 +4,6 @@ import {
   OfflineAudioContext,
   AudioParam,
   ConstantSourceNode,
-  ChannelMergerNode
 } from 'isomorphic-web-audio-api';
 
 const audioContextOptions = { length: 256, numberOfChannels: 2, sampleRate: 48000 };
