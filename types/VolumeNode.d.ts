@@ -1,19 +1,10 @@
 /**
- * The VolumeNode interface represents a change in volume controlled in dB.
- *
- * ```
- * [input]
- *    │
- *    │ control volume in dB
- *    │
- * [output]
- *
  * @extends AudioNode
  * @param {BaseAudioContext} context
  * @param {Object} [options={}]
  * @param {number} [options.volume=0]
  * @param {number} [options.min=-80]
- * @param {number} [options.max=-80]
+ * @param {number} [options.max=12]
  * @param {number} [options.curve=null]
  *
  * @example
@@ -57,12 +48,14 @@ export class VolumeNode extends AudioNode {
     private get gain();
     /**
      * Minimum value of the volume in dB.
-     * @type number
+     *
+     * @type {number}
      */
     get min(): number;
     /**
      * Maximum value of the volume in dB.
-     * @type number
+     *
+     * @type {number}
      */
     get max(): number;
     /**
@@ -71,12 +64,13 @@ export class VolumeNode extends AudioNode {
      * Note that the returned sequence value is a copy of the actual curve used, then
      * modifying the returned value won't affect the audio computation.
      *
-     * @type Float32Array
+     * @type {Float32Array}
      */
     get curve(): Float32Array;
     /**
-     * Represents the amount of gain in decibels to apply.
-     * @type AudioParam
+     * An AudioParam that Represents the amount of gain in decibels to apply.
+     *
+     * @type {AudioParam}
      */
     get volume(): AudioParam;
     #private;
