@@ -22,8 +22,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ircam-ismm/sc-utils.git"
+    "url": "git+https://github.com/ircam-ismm/sc-audio.git"
   },
+  "bugs": {
+    "url": "https://github.com/ircam-ismm/sc-audio/issues"
+  },
+  "homepage": "https://ircam-ismm.github.io/sc-audio/",
   "exports": {
     ".": {
       "module": "./src/index.js",
