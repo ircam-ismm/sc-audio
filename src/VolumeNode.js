@@ -7,7 +7,6 @@ import {
   BaseAudioContext,
   GainNode,
   WaveShaperNode,
-  ScriptProcessorNode,
 } from 'isomorphic-web-audio-api';
 
 import {
