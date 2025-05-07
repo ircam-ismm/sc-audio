@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
-  ConvolverNode,
   AudioBufferSourceNode,
 } from 'isomorphic-web-audio-api';
 import { ensureResumed } from './ensure-resumed.js';
@@ -9,14 +8,16 @@ import { CollectorNode } from '../../src/index.js';
 
 let buffer0, buffer1, src0, src1, mixer, audioContext;
 
-export async function enter(context, loader) {
+export async function enter(context) {
   audioContext = context;
-  buffer0 = await loader.load('./assets/drum-loop.wav');
-  buffer1 = await loader.load('./assets/clar-bass-mono.wav');
 
-  // create the graph
   mixer = new CollectorNode(audioContext, { ratio: 0 });
   mixer.connect(audioContext.destination);
+}
+
+export async function loadAssets(loader) {
+  buffer0 = await loader.load('./assets/drum-loop.wav');
+  buffer1 = await loader.load('./assets/clar-bass-mono.wav');
 }
 
 export function exit() {
@@ -48,39 +49,42 @@ inputs[0]   inputs[1]
 </sc-code-example>
 
 <h3>Demo</h3>
-<div>
-  <sc-transport
-    .buttons=${['play', 'stop']}
-    @change=${async e => {
-      await ensureResumed(audioContext);
+<div class="demo">
+  <div>
+    <sc-transport
+      .buttons=${['play', 'stop']}
+      value="stop"
+      @change=${async e => {
+        await ensureResumed(audioContext);
 
-      if (src0 && src1) {
-        src0.stop();
-        src1.stop();
-        src0 = null;
-        src1 = null;
-      }
+        if (src0 && src1) {
+          src0.stop();
+          src1.stop();
+          src0 = null;
+          src1 = null;
+        }
 
-      if (e.detail.value === 'play') {
-        // create two source to be connected to the collector inputs
-        src0 =  new AudioBufferSourceNode(audioContext, { buffer: buffer0, loop: true });
-        src0.connect(mixer.inputs[0]);
-        src0.start();
+        if (e.detail.value === 'play') {
+          // create two source to be connected to the collector inputs
+          src0 =  new AudioBufferSourceNode(audioContext, { buffer: buffer0, loop: true });
+          src0.connect(mixer.inputs[0]);
+          src0.start();
 
-        src1 =  new AudioBufferSourceNode(audioContext, { buffer: buffer1, loop: true });
-        src1.connect(mixer.inputs[1]);
-        src1.start();
-      }
-    }}
-  ></sc-transport>
-</div>
-<div>
-  <sc-text>.ratio: AudioParam</sc-text>
-  <sc-slider
-    value="0"
-    number-box
-    @input=${e => mixer.ratio.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
-  ></sc-slider>
+          src1 =  new AudioBufferSourceNode(audioContext, { buffer: buffer1, loop: true });
+          src1.connect(mixer.inputs[1]);
+          src1.start();
+        }
+      }}
+    ></sc-transport>
+  </div>
+  <div>
+    <sc-text>.ratio: AudioParam</sc-text>
+    <sc-slider
+      value=${mixer.ratio.value}
+      number-box
+      @input=${e => mixer.ratio.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
+    ></sc-slider>
+  </div>
 </div>
 
 <h3>Example</h3>

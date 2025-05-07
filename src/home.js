@@ -75,4 +75,5 @@ dryWet.ratio.exponentialRampToValueAtTime(0.001, audioContext.currentTime + buff
   <a target="_blank" href="https://github.com/ircam-ismm/sc-audio/blob/main/LICENSE">BSD-3-Clause</a>
 
   <div style="height: 120px;"></div>
+</div>
 `;
