@@ -179,37 +179,7 @@ wrapper.setNodeAtTime(node2, audioContext.currentTime + 1);
     *   `options.volume` **[number][3]**  (optional, default `0`)
     *   `options.min` **[number][3]**  (optional, default `-80`)
     *   `options.max` **[number][3]**  (optional, default `12`)
-    *   `options.curve` **[number][3]**  (optional, default `null`)
-
-### Examples
-
-```javascript
-import {
-  AudioContext,
-  AudioBufferSourceNode,
-} from 'isomorphic-web-audio-api';
-import {
-  AudioBufferLoader,
-  VolumeNode,
-} from '@ircam/sc-audio';
-
-// in browsers, you will need to resume on a user gesture
-const audioContext = new AudioContext();
-// load an audio buffer
-const loader = new AudioBufferLoader(audioContext);
-const buffer = await loader.load('../assets/drum-loop.wav');
-
-// build graph and start source
-const fader = new VolumeNode(audioContext);
-const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
-src.connect(fader).connect(audioContext.destination);
-
-// start source and ramp from -60 to 0 dB
-const now = audioContext.currentTime;
-src.start(now);
-fader.volume.setValueAtTime(-60, now);
-fader.volume.linearRampToValueAtTime(0, now + buffer.duration);
-```
+    *   `options.controlCurve`   (optional, default `null`)
 
 ### min
 

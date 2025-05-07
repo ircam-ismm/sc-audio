@@ -68,7 +68,6 @@ export function template(example, api) {
         }
 
         if (e.detail.value === 'play') {
-          console.log('heho', buffer);
           src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
           src.connect(bypass);
           src.start();
