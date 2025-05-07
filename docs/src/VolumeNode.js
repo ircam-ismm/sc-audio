@@ -8,12 +8,15 @@ import { VolumeNode } from '../../src/index.js';
 
 let buffer, src, fader, audioContext;
 
-export async function enter(context, loader) {
+export async function enter(context) {
   audioContext = context;
-  buffer = await loader.load('./assets/drum-loop.wav');
 
   fader = new VolumeNode(audioContext);
   fader.connect(audioContext.destination);
+}
+
+export async function loadAssets(loader) {
+  buffer = await loader.load('./assets/drum-loop.wav');
 }
 
 export function exit() {
@@ -39,35 +42,37 @@ export function template(example, api) {
 </sc-code-example>
 
 <h3>Demo</h3>
-<div>
-  <sc-transport
-    .buttons=${['play', 'stop']}
-    value="stop"
-    @change=${async e => {
-      await ensureResumed(audioContext);
+<div class="demo">
+  <div>
+    <sc-transport
+      .buttons=${['play', 'stop']}
+      value="stop"
+      @change=${async e => {
+        await ensureResumed(audioContext);
 
-      if (src) {
-        src.stop();
-        src = null;
-      }
+        if (src) {
+          src.stop();
+          src = null;
+        }
 
-      if (e.detail.value === 'play') {
-        src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
-        src.connect(fader);
-        src.start();
-      }
-    }}
-  ></sc-transport>
-</div>
-<div>
-  <sc-text>.volume: AudioParam</sc-text>
-  <sc-slider
-    number-box
-    min=${fader.min}
-    max=${fader.max}
-    value=${fader.volume.value}
-    @input=${e => fader.volume.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
-  ></sc-slider>
+        if (e.detail.value === 'play') {
+          src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+          src.connect(fader);
+          src.start();
+        }
+      }}
+    ></sc-transport>
+  </div>
+  <div>
+    <sc-text>.volume: AudioParam</sc-text>
+    <sc-slider
+      number-box
+      min=${fader.min}
+      max=${fader.max}
+      value=${fader.volume.value}
+      @input=${e => fader.volume.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
+    ></sc-slider>
+  </div>
 </div>
 
 <h3>Example</h3>

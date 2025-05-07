@@ -9,18 +9,22 @@ import { PlaceholderNode } from '../../src/index.js';
 
 let buffer, src, placeholder, convolver1, convolver2, audioContext;
 
-export async function enter(context, loader) {
+export async function enter(context) {
   audioContext = context;
-  buffer = await loader.load('./assets/drum-loop.wav');
 
-  const ir1 = await loader.load('../assets/plate-small.wav');
-  const ir2 = await loader.load('../assets/room-large.wav');
-  convolver1 = new ConvolverNode(audioContext, { buffer: ir1 });
-  convolver2 = new ConvolverNode(audioContext, { buffer: ir2 });
+  convolver1 = new ConvolverNode(audioContext);
+  convolver2 = new ConvolverNode(audioContext);
 
   placeholder = new PlaceholderNode(audioContext);
   placeholder.node = convolver1;
   placeholder.connect(audioContext.destination);
+}
+
+export async function loadAssets(loader) {
+  buffer = await loader.load('./assets/drum-loop.wav');
+
+  convolver1.buffer = await loader.load('./assets/plate-small.wav');
+  convolver2.buffer = await loader.load('./assets/room-large.wav');
 }
 
 export function exit() {
@@ -50,33 +54,35 @@ export function template(example, api) {
 </sc-code-example>
 
 <h3>Demo</h3>
-<div>
-  <sc-transport
-    .buttons=${['play', 'stop']}
-    value="stop"
-    @change=${async e => {
-      await ensureResumed(audioContext);
+<div class="demo">
+  <div>
+    <sc-transport
+      .buttons=${['play', 'stop']}
+      value="stop"
+      @change=${async e => {
+        await ensureResumed(audioContext);
 
-      if (src) {
-        src.stop();
-        src = null;
-      }
+        if (src) {
+          src.stop();
+          src = null;
+        }
 
-      if (e.detail.value === 'play') {
-        src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
-        src.connect(placeholder);
-        src.start();
-      }
-    }}
-  ></sc-transport>
-</div>
-<div>
-  <sc-text>.active: boolean</sc-text>
-  <sc-tab
-    @change=${e => placeholder.node = e.detail.value}
-    .value=${convolver1}
-    .options=${{ convolver1, convolver2  }}
-  ></sc-tab>
+        if (e.detail.value === 'play') {
+          src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
+          src.connect(placeholder);
+          src.start();
+        }
+      }}
+    ></sc-transport>
+  </div>
+  <div>
+    <sc-text>.node: AudioNode</sc-text>
+    <sc-tab
+      @change=${e => placeholder.node = e.detail.value === 'convolver1' ? convolver1 : convolver2}
+      value="convolver1"
+      .options=${['convolver1', 'convolver2']}
+    ></sc-tab>
+  </div>
 </div>
 
 <h3>Example</h3>

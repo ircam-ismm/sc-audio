@@ -9,17 +9,20 @@ import { DistributorNode } from '../../src/index.js';
 
 let buffer, src, dryWet, convolver, audioContext;
 
-export async function enter(context, loader) {
+export async function enter(context) {
   audioContext = context;
-  const ir = await loader.load('./assets/room-large.wav');
-  buffer = await loader.load('./assets/drum-loop.wav');
 
-  convolver = new ConvolverNode(audioContext, { buffer: ir });
+  convolver = new ConvolverNode(audioContext, { buffer });
   convolver.connect(audioContext.destination);
 
   dryWet = new DistributorNode(audioContext);
   dryWet.connect(audioContext.destination, 0);
   dryWet.connect(convolver, 1);
+}
+
+export async function loadAssets(loader) {
+  convolver.buffer = await loader.load('./assets/room-large.wav');
+  buffer = await loader.load('./assets/drum-loop.wav');
 }
 
 export function exit() {
@@ -48,33 +51,36 @@ export function template(example, api) {
 </sc-code-example>
 
 <h3>Demo</h3>
-<div>
-  <sc-transport
-    .buttons=${['play', 'stop']}
-    @change=${async e => {
-      await ensureResumed(audioContext);
+<div class="demo">
+  <div>
+    <sc-transport
+      .buttons=${['play', 'stop']}
+      value="stop"
+      @change=${async e => {
+        await ensureResumed(audioContext);
 
-      if (src) {
-        src.stop();
-        src = null;
-      }
+        if (src) {
+          src.stop();
+          src = null;
+        }
 
-      if (e.detail.value === 'play') {
-        src = new AudioBufferSourceNode(audioContext, { buffer });
-        src.connect(dryWet);
-        src.loop = true;
-        src.start();
-      }
-    }}
-  ></sc-transport>
-</div>
-<div>
-  <sc-text>.ratio: AudioParam</sc-text>
-  <sc-slider
-    value="0"
-    number-box
-    @input=${e => dryWet.ratio.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
-  ></sc-slider>
+        if (e.detail.value === 'play') {
+          src = new AudioBufferSourceNode(audioContext, { buffer });
+          src.connect(dryWet);
+          src.loop = true;
+          src.start();
+        }
+      }}
+    ></sc-transport>
+  </div>
+  <div>
+    <sc-text>.ratio: AudioParam</sc-text>
+    <sc-slider
+      value=${dryWet.ratio.value}
+      number-box
+      @input=${e => dryWet.ratio.setTargetAtTime(e.detail.value, audioContext.currentTime, 0.01)}
+    ></sc-slider>
+  </div>
 </div>
 
 <h3>Example</h3>

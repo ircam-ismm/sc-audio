@@ -15,7 +15,6 @@ import shellLang from 'highlight.js/lib/languages/shell';
 import bashLang from 'highlight.js/lib/languages/bash';
 import textLang from 'highlight.js/lib/languages/plaintext';
 
-import { isFunction } from '@ircam/sc-utils';
 import '@ircam/sc-components';
 import { AudioContext } from 'isomorphic-web-audio-api';
 import { AudioBufferLoader } from '@ircam/sc-loader';
@@ -181,13 +180,26 @@ async function setContent(pages, page) {
 
   // enter first then render the page
   if (current.enter) {
-    await current.enter(audioContext, loader);
+    await current.enter(audioContext);
+  }
+  let template;
+
+  if (page === 'home') {
+    template = current.template;
+  } else {
+    const [example, api] = await Promise.all([fetchExample(page), fetchAPI(page)]);
+    template = current.template(example, api);
   }
 
-  const [example, api] = await Promise.all([fetchExample(page), fetchAPI(page)]);
-
-  const template = isFunction(current.template) ? current.template(example, api) : current.template;
   render(template, document.querySelector('#main > section'));
+
+  // once the page is rendered, load the assets of the demo which might take some time
+  if (current.loadAssets) {
+    const $demo = document.querySelector('.demo');
+    $demo.style.opacity = 0.4;
+    await current.loadAssets(loader);
+    $demo.style.opacity = 1;
+  }
 
   hljs.highlightAll();
 }
