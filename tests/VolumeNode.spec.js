@@ -19,11 +19,11 @@ describe('# VolumeNode', () => {
       assert.equal(node.max, 20);
     });
 
-    it('should expose `curve` option', () => {
-      const audioContext = new OfflineAudioContext(audioContextOptions);
-      const node = new VolumeNode(audioContext, { curve: [1, 2, 3, 4, 5] });
-      assert.deepEqual(node.curve, new Float32Array([1, 2, 3, 4, 5]));
-    });
+    // it('should expose `curve` option', () => {
+    //   const audioContext = new OfflineAudioContext(audioContextOptions);
+    //   const node = new VolumeNode(audioContext, { curve: [1, 2, 3, 4, 5] });
+    //   assert.deepEqual(node.curve, new Float32Array([1, 2, 3, 4, 5]));
+    // });
 
     it('should compute curve according to given min and max', () => {
       const min = -6;
@@ -60,5 +60,22 @@ describe('# VolumeNode', () => {
         }
       });
     }
+
+    // const curve = [-20, 0, 6];
+    // const curveTestValues = [-20, -10, 0, 3, 6];
+
+    // for (let volume of curveTestValues) {
+    //   it.only('should work with curve', async () => {
+    //     const audioContext = new OfflineAudioContext(audioContextOptions);
+    //     const fader = new VolumeNode(audioContext, { curve, volume });
+    //     const source = new ConstantSourceNode(audioContext, { offset: 1 });
+    //     source.connect(fader).connect(audioContext.destination);
+    //     source.start();
+
+    //     const buffer = await audioContext.startRendering();
+    //     const result = buffer.getChannelData(0);
+    //     const expected = new Float32Array(result.length).fill(decibelToLinear(volume));
+    //   });
+    // }
   });
 });

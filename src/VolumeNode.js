@@ -7,6 +7,7 @@ import {
   BaseAudioContext,
   GainNode,
   WaveShaperNode,
+  ScriptProcessorNode,
 } from 'isomorphic-web-audio-api';
 
 import {
@@ -44,34 +45,6 @@ const DEFAULT_VOLUME_WAVETABLE = computeWavetable(DEFAULT_WAVETABLE_SIZE, DEFAUL
  * @param {number} [options.volume=0]
  * @param {number} [options.min=-80]
  * @param {number} [options.max=12]
- * @param {number} [options.curve=null]
- *
- * @example
- * import {
- *   AudioContext,
- *   AudioBufferSourceNode,
- * } from 'isomorphic-web-audio-api';
- * import {
- *   AudioBufferLoader,
- *   VolumeNode,
- * } from '@ircam/sc-audio';
- *
- * // in browsers, you will need to resume on a user gesture
- * const audioContext = new AudioContext();
- * // load an audio buffer
- * const loader = new AudioBufferLoader(audioContext);
- * const buffer = await loader.load('../assets/drum-loop.wav');
- *
- * // build graph and start source
- * const fader = new VolumeNode(audioContext);
- * const src = new AudioBufferSourceNode(audioContext, { buffer, loop: true });
- * src.connect(fader).connect(audioContext.destination);
- *
- * // start source and ramp from -60 to 0 dB
- * const now = audioContext.currentTime;
- * src.start(now);
- * fader.volume.setValueAtTime(-60, now);
- * fader.volume.linearRampToValueAtTime(0, now + buffer.duration);
  */
 export class VolumeNode extends GainNode {
   #volumeCurveController = null;
@@ -83,7 +56,7 @@ export class VolumeNode extends GainNode {
     volume = 0,
     min = DEFAULT_MIN_DB,
     max = DEFAULT_MAX_DB,
-    curve = null,
+    controlCurve = null,
   } = {}) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError('Failed to construct VolumeNode: argument 1 is not an instance of BaseAudioContext');
@@ -93,40 +66,41 @@ export class VolumeNode extends GainNode {
       throw new TypeError('Failed to construct VolumeNode: argument 2 is not an object');
     }
 
+    // having a user defined curve make no sens since our mapping from AudioParam
+    // to in dB to gain values must be linear. Non-linear controls are just what
+    // they are: controls...
+    // Just expose a user friendly `controlCurve` option from which we extract the min and the max
+    if (controlCurve) {
+      if (!isSequence(controlCurve)) {
+        throw new TypeError('Failed to construct VolumeNode: options.controlCurve is not a sequence of finite numbers');
+      }
+
+      min = controlCurve[0];
+      max = controlCurve[controlCurve.length - 1];
+    }
+
     if (!Number.isFinite(volume)) {
       throw new TypeError('Failed to construct VolumeNode: options.volume is not a finite number');
     }
 
-    let dbCurve = null;
-
-    if (curve !== null) {
-      if (!isSequence(curve)) {
-        throw new TypeError('Failed to construct VolumeNode: options.curve is not a sequence of finite number');
-      }
-
-      dbCurve = curve;
-    } else {
-      if (!Number.isFinite(min)) {
-        throw new TypeError('Failed to construct VolumeNode: options.min is not a finite number');
-      }
-
-      if (!Number.isFinite(max)) {
-        throw new TypeError('Failed to construct VolumeNode: options.max is not a finite number');
-      }
-
-      if (min !== DEFAULT_MIN_DB || max !== DEFAULT_MAX_DB) {
-        dbCurve = computeWavetable(DEFAULT_WAVETABLE_SIZE, min, max);
-      } else {
-        dbCurve = DEFAULT_VOLUME_WAVETABLE;
-      }
+    if (!Number.isFinite(min)) {
+      throw new TypeError('Failed to construct VolumeNode: options.min is not a finite number');
     }
+
+    if (!Number.isFinite(max)) {
+      throw new TypeError('Failed to construct VolumeNode: options.max is not a finite number');
+    }
+
+    const curve = (min !== DEFAULT_MIN_DB || max !== DEFAULT_MAX_DB)
+      ? computeWavetable(DEFAULT_WAVETABLE_SIZE, min, max)
+      : DEFAULT_VOLUME_WAVETABLE;
 
     super(context, { gain: 0 });
 
     this.#min = min;
     this.#max = max;
 
-    this.#dbWavetable = new WaveShaperNode(context, { curve: dbCurve });
+    this.#dbWavetable = new WaveShaperNode(context, { curve });
     this.#dbWavetable.connect(super.gain);
 
     this.#volumeCurveController = new ScaledConstantSourceNode(context, {
