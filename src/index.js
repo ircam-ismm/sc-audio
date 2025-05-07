@@ -46,6 +46,7 @@ hljs.registerLanguage('yml', yamlLang);
 hljs.registerLanguage('shell', shellLang);
 hljs.registerLanguage('sh', shellLang);
 hljs.registerLanguage('bash', bashLang);
+hljs.configure({ignoreUnescapedHTML: true});
 
 const marked = new Marked(
   markedHighlight({
