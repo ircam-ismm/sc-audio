@@ -90,6 +90,6 @@ export class ScaledConstantSourceNode extends ConstantSourceNode {
 
   /** @ignore */
   disconnect(...args) {
-    return this.#output.connect(...args);
+    return this.#output.disconnect(...args);
   }
 }

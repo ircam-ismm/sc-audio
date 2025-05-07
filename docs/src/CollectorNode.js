@@ -20,12 +20,14 @@ export async function enter(context, loader) {
 }
 
 export function exit() {
-  if (src) {
-    src.stop();
+  if (src0 && src1) {
+    src0.stop();
+    src1.stop();
+    src0 = null;
+    src1 = null;
   }
 
-  convolver.disconnect();
-  dryWet.disconnect();
+  mixer.disconnect();
 }
 
 export function template(example, api) {

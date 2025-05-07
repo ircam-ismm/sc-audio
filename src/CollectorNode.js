@@ -118,6 +118,6 @@ export class CollectorNode extends GainNode {
 
   /** @ignore */
   disconnect(...args) {
-    return this.#output.connect(...args);
+    return this.#output.disconnect(...args);
   }
 }

@@ -72,5 +72,20 @@ const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 4800
         }
       });
     });
+
+    describe('# disconnect(...args)', () => {
+      it('should be able to chain connect calls', () => {
+        const audioContext = new OfflineAudioContext(audioContextOptions);
+        const node = new ctor(audioContext);
+
+        if (node.numberOfOutputs > 1) {
+          console.log('...abort, given node has multiple outputs');
+        } else {
+          const a = new GainNode(audioContext);
+          node.connect(a).connect(audioContext.destination);
+          node.disconnect();
+        }
+      });
+    });
   });
 })
