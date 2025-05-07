@@ -12,7 +12,7 @@
     *   `options.volume` **[number][2]**  (optional, default `0`)
     *   `options.min` **[number][2]**  (optional, default `-80`)
     *   `options.max` **[number][2]**  (optional, default `12`)
-    *   `options.curve` **[number][2]**  (optional, default `null`)
+    *   `options.controlCurve`   (optional, default `null`)
 
 ### min
 

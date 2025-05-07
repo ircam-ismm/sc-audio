@@ -179,7 +179,7 @@ wrapper.setNodeAtTime(node2, audioContext.currentTime + 1);
     *   `options.volume` **[number][3]**  (optional, default `0`)
     *   `options.min` **[number][3]**  (optional, default `-80`)
     *   `options.max` **[number][3]**  (optional, default `12`)
-    *   `options.curve` **[number][3]**  (optional, default `null`)
+    *   `options.controlCurve`   (optional, default `null`)
 
 ### min
 
