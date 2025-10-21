@@ -5,5 +5,6 @@ export { MuteNode } from './MuteNode.js';
 export { PlaceholderNode } from './PlaceholderNode.js';
 export { ScaledConstantSourceNode } from './ScaledConstantSourceNode.js';
 export { VolumeNode } from './VolumeNode.js';
+export { RtlSdrSourceNode, createRtlSdrStream } from './RtlSdrSourceNode.js';
 // make more sens here
 export { AudioBufferLoader } from '@ircam/sc-loader';

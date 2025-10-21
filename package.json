@@ -70,6 +70,7 @@
   "dependencies": {
     "@ircam/sc-loader": "^1.1.0",
     "@ircam/sc-utils": "^1.10.1",
+    "@jtarrio/webrtlsdr": "^2.0.3",
     "isomorphic-web-audio-api": "^1.0.2"
   }
 }
