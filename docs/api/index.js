@@ -167,6 +167,34 @@ wrapper.setNodeAtTime(node2, audioContext.currentTime + 1);
 *   `when` **[number][3]** Time at which the change should be applied. In audio
     context current time coordinates.
 
+## stages
+
+Number of cascading allpass filters.
+
+Note that changing this parameter at runtime may cause discontinuities
+
+Type: [Number][3]
+
+## ratio
+
+Mix ratio between dry signal (0) and wet signal (1)
+
+## rate
+
+Rate (in Hz) of the LFO modulating the frequency of the filter bank.
+
+## depth
+
+Depth (in Hz) of the modulation applied to the frequency of the filter bank by the LFO.
+
+A depth of 100 applied to a frequency of 1000 will produce a frequency comprised
+between 900 and 1100.
+
+## frequency
+
+Frequency of the all pass filters of the filter bank. This is the frequency at
+which the phases will be shifted.
+
 ## VolumeNode
 
 **Extends AudioNode**
@@ -193,15 +221,6 @@ Maximum value of the volume in dB.
 
 Type: [number][3]
 
-### curve
-
-Curve used to map from db to linear gain.
-
-Note that the returned sequence value is a copy of the actual curve used, then
-modifying the returned value won't affect the audio computation.
-
-Type: [Float32Array][5]
-
 ### volume
 
 An AudioParam that Represents the amount of gain in decibels to apply.
@@ -215,5 +234,3 @@ Type: AudioParam
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
 [4]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-
-[5]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array

@@ -141,18 +141,6 @@ export class VolumeNode extends GainNode {
   }
 
   /**
-   * Curve used to map from db to linear gain.
-   *
-   * Note that the returned sequence value is a copy of the actual curve used, then
-   * modifying the returned value won't affect the audio computation.
-   *
-   * @type {Float32Array}
-   */
-  get curve() {
-    return this.#dbWavetable.curve;
-  }
-
-  /**
    * An AudioParam that Represents the amount of gain in decibels to apply.
    *
    * @type {AudioParam}

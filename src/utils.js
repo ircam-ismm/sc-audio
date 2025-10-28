@@ -13,3 +13,14 @@ for (let i = 0; i < DEFAULT_WAVETABLE_SIZE; i++) {
 
 /** @private */
 export const SET_TARGET_DEFAULT_TIME_CONSTANT = 0.003;
+
+export function computeCurve(func, length) {
+  const curve = new Float32Array(length);
+
+  for (let index = 0; index < length; index++) {
+    const inputValue = index / (length - 1) * 2 - 1;
+    curve[index] = func(inputValue, index);
+  }
+
+  return curve;
+}
