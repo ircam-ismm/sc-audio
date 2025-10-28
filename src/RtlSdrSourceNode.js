@@ -1,55 +1,30 @@
-import { AudioPlayer } from "@jtarrio/webrtlsdr/players/audioplayer.js";
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
-import { Radio } from "@jtarrio/webrtlsdr/radio.js";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
-import { BaseAudioContext, GainNode } from 'isomorphic-web-audio-api';
+import {
+  Demodulator
+} from "@jtarrio/webrtlsdr/demod/demodulator.js";
+import {
+  Radio
+} from "@jtarrio/webrtlsdr/radio.js";
+import {
+  RTL2832U_Provider
+} from "@jtarrio/webrtlsdr/rtlsdr.js";
+import {
+  AudioBuffer,
+  AudioBufferSourceNode,
+  BaseAudioContext,
+  GainNode,
+} from 'isomorphic-web-audio-api';
 
+// @todo - import node-usb based on platform w/ conditional import
+
+// values picked from base class
+const DEFAULT_BUFFERING_DURATION = 0.05;
+const STR_LDR_STREAM_SAMPLE_RATE = 48000;
 
 export class RtlSdrSourceNode extends GainNode {
   #stream;
 
   constructor(context, {
     stream
-  } = {}) {
-    super(context, { gain: 0 });
-
-    this.#stream = stream;
-  }
-
-  start(startTime) {
-    this.#stream.addOutput(this);
-    super.setValueAtTime(1, startTime);
-  }
-
-  stop(stopTime) {
-    super.setValueAtTime(0, stopTime);
-
-    const dt = stopTime - audioContext.currentTime;
-    setTimeout(() => {
-      this.#stream.removeOutput(this);
-    }, dt * 1000);
-  }
-}
-
-
-
-export class createRtlSdrStream {
-  #context;
-  #theirPlayer;
-  #demodulator;
-  #readyPromise;
-  #output;
-  #radio;
-
-  constructor({
-    context = null,
-    hfSampleRate = 1.8e6,
-    hardwareFrequency = 91.7e6,
-    frequencyOffset = 0,
-    hfGain = null, // AGC
-    frequencyCorrection = 0, // le crystal là
-    filterWidth = 150e6, // change only on NBFM, AM, SSB, and CW
-    demodulationMode = "WBFM"
   } = {}) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'RtlSdrSourceNode': Argument 1 is not an instance of BaseAudioContext`);
@@ -59,12 +34,87 @@ export class createRtlSdrStream {
       throw new TypeError(`Failed to construct 'RtlSdrSourceNode': Argument 2 is not an object`);
     }
 
+    if (!(stream instanceof RtlSdrStream)) {
+      throw new TypeError(`Failed to construct 'RtlSdrSourceNode': 'stream' option is not an instance of RtlSdrStream`);
+    }
+
+    super(context, { gain: 0 });
+    this.#stream = stream;
+  }
+
+  // shadow super.gain audio param
+  get gain() {
+    return undefined;
+  }
+
+  #process = (bufferStartTime, buffer) => {
+    // @todo - support modifying detune and playbackRate
+    const src = new AudioBufferSourceNode(this.context, { buffer });
+    src.connect(this);
+    src.start(bufferStartTime);
+  }
+
+  start(startTime) {
+    // @todo - make sure we can't start a source twice for consistency w/ regular web audio sources
+    this.#stream.addSource(this.#process);
+    super.setValueAtTime(1, startTime);
+  }
+
+  stop(stopTime) {
+    super.setValueAtTime(0, stopTime);
+    // context.currentTime can be one block ahead of time, then we add a block duration for safety
+    const dt = stopTime - this.context.currentTime + (128 / this.context.sampleRate);
+    setTimeout(() => this.#stream.deleteSource(this.#process), dt * 1000);
+  }
+
+  // delegate connect / disconnect to `super`
+}
+
+export class RtlSdrStream {
+  #context;
+  #streamDispatcher;
+  #demodulator;
+  #readyPromise;
+  #radio;
+
+  constructor(context, {
+    bufferingDuration = DEFAULT_BUFFERING_DURATION, // room for buffering, see if we can lower it safely
+    provider = new RTL2832U_Provider(), // actual hardware?
+    hfSampleRate = 1.8e6,
+    hardwareFrequency = 91.7e6,
+    frequencyOffset = 0,
+    hfGain = null, // AGC
+    frequencyCorrection = 0, // le crystal là // ???
+    filterWidth = 150e6, // change only on NBFM, AM, SSB, and CW
+    demodulationMode = 'WBFM',
+  } = {}) {
+    if (!(context instanceof BaseAudioContext)) {
+      throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 1 is not an instance of BaseAudioContext`);
+    }
+
+    if (arguments[1] !== undefined && !isPlainObject(arguments[1])) {
+      throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 2 is not an object`);
+    }
+
+    // @todo - check / sanitize the arguments
+
     this.#context = context;
 
-    this.#readyPromise = Promise.withResolvers();
-    this.#theirPlayer = new TheirPlayer(this.#context, this.#output, this.#readyPromise);
-    this.#demodulator = new Demodulator(this.#theirPlayer);
-    this.#radio = new Radio(new RTL2832U_Provider(), this.#demodulator);
+    const {
+      promise,
+      resolve,
+    } = Promise.withResolvers();
+
+    this.#readyPromise = promise;
+    this.#streamDispatcher = new StreamDispatcher(
+      this.#context, // we need this for timing reasons
+      bufferingDuration,
+      resolve, // make sure we resolve `start` when we actually have something to play
+    );
+
+    this.#demodulator = new Demodulator(this.#streamDispatcher);
+    // add an option to modify RTL2832U_Provider
+    this.#radio = new Radio(provider, this.#demodulator);
 
     this.#radio.setSampleRate(hfSampleRate);
     this.#radio.setFrequency(hardwareFrequency);
@@ -78,126 +128,115 @@ export class createRtlSdrStream {
 
   }
 
+  async start() {
+    this.#radio.start();
+    return this.#readyPromise.promise;
+  }
+
+  async stop() {
+    this.#radio.stop();
+  }
+
+  addProcessor(processor) {
+    this.#streamDispatcher.processors.add(processor);
+  }
+
+  deleteProcessor(processor) {
+    this.#streamDispatcher.processors.delete(processor);
+  }
+
   get context() {
     return this.#context;
   }
 
-  get hfSampleRate() {
-    return this.#radio.getSampleRate();
-  }
-
-  get hardwareFrequency() {
-    return this.#radio.getFrequency();
-  } 
-
-  get frequencyCorrection() {
-    return this.#radio.getFrequencyCorrection();
-  }
-
-  get hfGain() {
-    return this.#radio.getGain();
-  }
-
-  get frequencyOffset() {
-    return this.#demodulator.getFrequencyOffset();
-  }
-
-  get demodulationMode() {
-    return this.#demodulator.getMode().scheme;
-  }
-
-  set hardwareFrequency(frequency) {
-    this.#radio.setFrequency(frequency);
-  }
-
-  set frequencyCorrection(frequencyCorrection) {
-    this.#radio.setFrequencyCorrection(frequencyCorrection);
-  }
-
-  set hfGain(gain) {
-    this.#radio.setGain(gain);
-  }
-
-  set frequencyOffset(frequencyOffset) {
-    this.#demodulator.setFrequencyOffset(frequencyOffset);
-  }
-
-  set demodulationMode(mode) {
-    this.#demodulator.setMode(getMode(mode));
-  }
-
-  start() {
-    this.#radio.start()
-  }
-
-  stop() {
-    this.#radio.stop()
-  }
-
-  // set context(value) {
-
+  // get hfSampleRate() {
+  //   return this.#radio.getSampleRate();
   // }
 
-  addOutput(node) {
-    this.#theirPlayer.outputs.add(node);
-  }
+  // get hardwareFrequency() {
+  //   return this.#radio.getFrequency();
+  // }
 
-  removeOutput(node) {
-    this.#theirPlayer.outputs.delete(node);
-  }
+  // set hardwareFrequency(frequency) {
+  //   this.#radio.setFrequency(frequency);
+  // }
+
+  // get frequencyCorrection() {
+  //   return this.#radio.getFrequencyCorrection();
+  // }
+
+  // set frequencyCorrection(frequencyCorrection) {
+  //   this.#radio.setFrequencyCorrection(frequencyCorrection);
+  // }
+
+  // get hfGain() {
+  //   return this.#radio.getGain();
+  // }
+
+  // set hfGain(gain) {
+  //   this.#radio.setGain(gain);
+  // }
+
+  // get frequencyOffset() {
+  //   return this.#demodulator.getFrequencyOffset();
+  // }
+
+  // set frequencyOffset(frequencyOffset) {
+  //   this.#demodulator.setFrequencyOffset(frequencyOffset);
+  // }
+
+  // get demodulationMode() {
+  //   return this.#demodulator.getMode().scheme;
+  // }
+
+  // set demodulationMode(mode) {
+  //   this.#demodulator.setMode(getMode(mode));
+  // }
 }
 
-class TheirPlayer {
-  #lastPlayedAt = -1;
-  // hard-coded from base player...
-  static OUT_RATE = 48000;
-  static TIME_BUFFER = 0.05;
+class StreamDispatcher {
+  #processors = new Set();
+  #bufferStartTime = -1;
+  #bufferingDuration;
+  #context;
+  #readyResolver;
+  #readyResolverTriggered = false;
 
-  constructor(context, output, readyPromise) {
-    this.context = context;
-    this.outputs = new Set();
-    this.readyPromise = readyPromise;
-    this.started = false;
+  constructor(context, bufferingDuration, readyResolver) {
+    this.#context = context;
+    this.#bufferingDuration = bufferingDuration;
+    this.#readyResolver = readyResolver;
   }
 
-  play(left, right) {
-    if (this.outputs.size === 0) {
-      return;
-    }
-
-    const buffer = this.context.createBuffer(
-      2,
-      leftSamples.length,
-      TheirPlayer.OUT_RATE
-    );
-
-    buffer.copyToChannel(0, leftSamples);
-    buffer.copyToChannel(1, rightSamples);
-
-    const source = new AudioBufferSourceNode(this.context, { buffer });
-    this.outputs.forEach(output => source.connect(output));
-
-    this.#lastPlayedAt = Math.max(
-      this.#lastPlayedAt + buffer.duration,
-      this.context.currentTime + TheirPlayer.TIME_BUFFER
-    );
-
-    source.start(this.#lastPlayedAt);
-
-    if (!this.started) {
-      const buffer = this.context.createBuffer(
-        1, 1, this.context.sampleRate
-      );
-      
-      const src = new AudioBufferSourceNode(this.context, { buffer });
-      src.connect(this.context.destination);
-      src.addEventListener('ended', () => {
-        this.readyPromise.resolve();
-      });
-      src.start(this.#lastPlayedAt);
-
-      this.started = true;
-    }
+  get processors() {
+    return this.#processors;
   }
 
+  play(leftSamples, rightSamples) {
+    // create buffer from left / right channels
+    const buffer = new AudioBuffer({
+      numberOfChannels: 2,
+      length: leftSamples.length,
+      sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
+    });
+    buffer.copyToChannel(leftSamples, 0);
+    buffer.copyToChannel(rightSamples, 1);
+
+    const now = this.#context.currentTime;
+
+    this.#bufferStartTime = Math.max(
+      this.#bufferStartTime + buffer.duration,
+      now + this.#bufferingDuration
+    );
+    // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
+    this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
+
+    // @todo - this may not behave as expected if radio is re-started after a stop
+    if (!this.#readyResolverTriggered) {
+      // context.currentTime can be one block ahead of time, then we add a block duration for safety
+      const dt = this.#bufferStartTime - now + (128 / this.#context.sampleRate);
+      setTimeout(this.#readyResolver, dt * 1000);
+      this.#readyResolverTriggered = true;
+    }
+  }
 }
