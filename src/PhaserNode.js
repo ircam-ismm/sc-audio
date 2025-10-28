@@ -14,7 +14,6 @@ import {
 
 export class PhaserNode extends GainNode {
   #output = null;
-  #stages = null;
   #dryWet = null;
   #lfoRate = null;
   #lfoDepth = null;
@@ -26,12 +25,13 @@ export class PhaserNode extends GainNode {
     stages = 4,
     rate = 10, // Hertz
     depth = 10, // Hertz (?)
-    feedback = 0, // linear gain
+    // @todo - implement
+    // feedback = 0, // linear gain
     frequency = 1000,
     ratio = 0.5,
     type = 'sine',
   } = {}) {
-     if (!(context instanceof BaseAudioContext)) {
+    if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'PhaserNode': Argument 1 is not an instance of BaseAudioContext`);
     }
 
