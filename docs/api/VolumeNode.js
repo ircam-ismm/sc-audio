@@ -26,15 +26,6 @@ Maximum value of the volume in dB.
 
 Type: [number][2]
 
-### curve
-
-Curve used to map from db to linear gain.
-
-Note that the returned sequence value is a copy of the actual curve used, then
-modifying the returned value won't affect the audio computation.
-
-Type: [Float32Array][3]
-
 ### volume
 
 An AudioParam that Represents the amount of gain in decibels to apply.
@@ -44,5 +35,3 @@ Type: AudioParam
 [1]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
 [2]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-
-[3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array
