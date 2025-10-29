@@ -56,7 +56,7 @@ export class RtlSdrSourceNode extends GainNode {
 
   start(startTime) {
     // @todo - make sure we can't start a source twice for consistency w/ regular web audio sources
-    this.#stream.addSource(this.#process);
+    this.#stream.addProcessor(this.#process);
     super.setValueAtTime(1, startTime);
   }
 
@@ -64,7 +64,7 @@ export class RtlSdrSourceNode extends GainNode {
     super.setValueAtTime(0, stopTime);
     // context.currentTime can be one block ahead of time, then we add a block duration for safety
     const dt = stopTime - this.context.currentTime + (128 / this.context.sampleRate);
-    setTimeout(() => this.#stream.deleteSource(this.#process), dt * 1000);
+    setTimeout(() => this.#stream.deleteProcessor(this.#process), dt * 1000);
   }
 
   // delegate connect / disconnect to `super`
