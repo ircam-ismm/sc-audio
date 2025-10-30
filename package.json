@@ -40,6 +40,12 @@
       "types": "./types/*.d.ts"
     }
   },
+  "imports": {
+    "#ensure-webusb.js": {
+      "node": "./src/utils/ensure-webusb.node.js",
+      "default": "./src/utils/ensure-webusb.browser.js"
+    }
+  },
   "scripts": {
     "api": "node ./docs/bin/jsdoc-to-md.js",
     "build": "npx esbuild src/index.js --bundle --minify --format=esm --outfile=build/bundle.js",
@@ -71,6 +77,7 @@
     "@ircam/sc-loader": "^1.1.0",
     "@ircam/sc-utils": "^1.10.1",
     "@jtarrio/webrtlsdr": "^2.0.3",
-    "isomorphic-web-audio-api": "^1.0.2"
+    "isomorphic-web-audio-api": "^1.0.2",
+    "usb": "^2.16.0"
   }
 }

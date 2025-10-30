@@ -1,20 +1,31 @@
 import {
   Demodulator
-} from "@jtarrio/webrtlsdr/demod/demodulator.js";
+} from '@jtarrio/webrtlsdr/demod/demodulator.js';
 import {
   Radio
-} from "@jtarrio/webrtlsdr/radio.js";
+} from '@jtarrio/webrtlsdr/radio.js';
 import {
-  RTL2832U_Provider
-} from "@jtarrio/webrtlsdr/rtlsdr.js";
+  getMode,
+  // getSchemes,
+  // modeParameters,
+} from "@jtarrio/webrtlsdr/demod/modes.js";
+import {
+  RTL2832U_Provider,
+  DirectSampling,
+} from '@jtarrio/webrtlsdr/rtlsdr.js';
+import {
+  isPlainObject,
+} from '@ircam/sc-utils';
 import {
   AudioBuffer,
   AudioBufferSourceNode,
   BaseAudioContext,
   GainNode,
+  // AudioContext
 } from 'isomorphic-web-audio-api';
-
-// @todo - import node-usb based on platform w/ conditional import
+import {
+  ensureWebUSB
+} from '#ensure-webusb.js'
 
 // values picked from base class
 const DEFAULT_BUFFERING_DURATION = 0.05;
@@ -48,20 +59,21 @@ export class RtlSdrSourceNode extends GainNode {
   }
 
   #process = (bufferStartTime, buffer) => {
+    // @note - buffer duration is ~50ms, any possibilities to reduce that?
     // @todo - support modifying detune and playbackRate
     const src = new AudioBufferSourceNode(this.context, { buffer });
-    src.connect(this);
+    src.connect(this.context.destination);
     src.start(bufferStartTime);
   }
 
-  start(startTime) {
+  start(startTime = this.context.currentTime) {
     // @todo - make sure we can't start a source twice for consistency w/ regular web audio sources
     this.#stream.addProcessor(this.#process);
-    super.setValueAtTime(1, startTime);
+    super.gain.setValueAtTime(1, startTime);
   }
 
   stop(stopTime) {
-    super.setValueAtTime(0, stopTime);
+    super.gain.setValueAtTime(0, stopTime);
     // context.currentTime can be one block ahead of time, then we add a block duration for safety
     const dt = stopTime - this.context.currentTime + (128 / this.context.sampleRate);
     setTimeout(() => this.#stream.deleteProcessor(this.#process), dt * 1000);
@@ -113,23 +125,28 @@ export class RtlSdrStream {
     );
 
     this.#demodulator = new Demodulator(this.#streamDispatcher);
-    // add an option to modify RTL2832U_Provider
     this.#radio = new Radio(provider, this.#demodulator);
 
-    this.#radio.setSampleRate(hfSampleRate);
     this.#radio.setFrequency(hardwareFrequency);
+    this.#radio.setDirectSamplingMethod(DirectSampling.Off);
     this.#radio.setFrequencyCorrection(frequencyCorrection);
     this.#radio.setGain(hfGain);
+    this.#radio.setSampleRate(hfSampleRate);
 
     this.#demodulator.setFrequencyOffset(frequencyOffset);
     this.#demodulator.setMode(this.#demodulator.getMode(demodulationMode));
-    // à faire un peu plus tard...
-    // this.#demodulator.setVolume(1);
 
+    // @todo
+    // this.#demodulator.setVolume(1);
   }
 
   async start() {
+    // @note - looks ok to have this here
+    // - ensure window.navigator.usb exists in browsers
+    // - monkey patch globalThis with webusb in node.js
+    await ensureWebUSB();
     this.#radio.start();
+
     return this.#readyPromise;
   }
 
@@ -212,15 +229,24 @@ class StreamDispatcher {
     return this.#processors;
   }
 
+  // seems to be called somewhere
+  setVolume(volume) {}
+  getVolume() {}
+
+  get sampleRate() {
+    return this.#context.sampleRate;
+  }
+
   play(leftSamples, rightSamples) {
     const now = this.#context.currentTime;
+    const bufferDuration = leftSamples.length / STR_LDR_STREAM_SAMPLE_RATE;
 
     this.#bufferStartTime = Math.max(
-      this.#bufferStartTime + buffer.duration,
+      this.#bufferStartTime + bufferDuration,
       now + this.#bufferingDuration
     );
 
-    if (this.processors.size > 0) {
+    if (leftSamples.length > 0 && this.#processors.size > 0) {
       // create buffer from left / right channels
       const buffer = new AudioBuffer({
         numberOfChannels: 2,
