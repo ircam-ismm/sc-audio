@@ -7,7 +7,7 @@ import {
 // in browsers, you will need to resume on a user gesture
 const context = new AudioContext();
 
-const stream = new RtlSdrStream(context, { bufferingDuration: 0.05 });
+const stream = new RtlSdrStream(context, { bufferingDuration: 0.01 });
 await stream.start();
 
 // kind of granular radio :)

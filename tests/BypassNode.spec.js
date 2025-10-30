@@ -56,35 +56,43 @@ describe('# BypassNode', () => {
       assert.deepEqual(result, expected);
     });
 
-    it('should properly toggle', async () => {
-      const audioContext = new OfflineAudioContext(audioContextOptions);
-      const bypass = new BypassNode(audioContext, { active: false });
-      const subGraph = new GainNode(audioContext, { gain: 0.5 });
-      bypass.subGraphInput.connect(subGraph).connect(bypass.subGraphOutput);
+    // this one crashes sometimes because suspend is not called properly
+    // @todo - should be checked on Rust side
+    for (let i = 0; i < 1000; i++) {
+      it.only('should properly toggle', async () => {
+        const audioContext = new OfflineAudioContext(audioContextOptions);
+        const bypass = new BypassNode(audioContext, { active: false });
+        const subGraph = new GainNode(audioContext, { gain: 0.5 });
+        bypass.subGraphInput.connect(subGraph).connect(bypass.subGraphOutput);
 
-      const src = new ConstantSourceNode(audioContext, { offset: 1 });
-      src.connect(bypass).connect(audioContext.destination);
-      src.start(0);
+        const src = new ConstantSourceNode(audioContext, { offset: 1 });
+        src.connect(bypass).connect(audioContext.destination);
+        src.start(0);
 
-      const bypassActiveFrame = 128;
+        const bypassActiveFrame = 128;
+        let suspendCurrentTime = null;
 
-      audioContext.suspend(bypassActiveFrame / audioContext.sampleRate).then(async () => {
-        bypass.active = true;
-        audioContext.resume();
-      });
+        audioContext.suspend(bypassActiveFrame / audioContext.sampleRate - Number.EPSILON).then(async () => {
+          suspendCurrentTime = audioContext.currentTime;
+          bypass.active = true;
+          audioContext.resume();
+        });
 
-      // bypass is not active, we should go into subGraph gain
-      const buffer = await audioContext.startRendering();
-      const result = buffer.getChannelData(0);
+        // bypass is not active, we should go into subGraph gain
+        const buffer = await audioContext.startRendering();
+        const result = buffer.getChannelData(0);
 
-      for (let i = 0; i < result.length; i++) {
-        if (i <= 128) {
-          assert.equal(result[i], 0.5);
-        } else {
-          assert.isAbove(result[i], 0.5);
+        console.log(suspendCurrentTime);
+
+        for (let i = 0; i < result.length; i++) {
+          if (i <= 128) {
+            assert.equal(result[i], 0.5);
+          } else {
+            assert.isAbove(result[i], 0.5, `${result} - ${suspendCurrentTime}`);
+          }
         }
-      }
-    });
+      });
+    }
   });
 
   describe('setActiveAtTime(active, when)', () => {

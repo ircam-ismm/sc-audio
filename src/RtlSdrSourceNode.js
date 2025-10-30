@@ -130,7 +130,7 @@ export class RtlSdrStream {
 
   async start() {
     this.#radio.start();
-    return this.#readyPromise.promise;
+    return this.#readyPromise;
   }
 
   async stop() {
@@ -213,23 +213,25 @@ class StreamDispatcher {
   }
 
   play(leftSamples, rightSamples) {
-    // create buffer from left / right channels
-    const buffer = new AudioBuffer({
-      numberOfChannels: 2,
-      length: leftSamples.length,
-      sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
-    });
-    buffer.copyToChannel(leftSamples, 0);
-    buffer.copyToChannel(rightSamples, 1);
-
     const now = this.#context.currentTime;
 
     this.#bufferStartTime = Math.max(
       this.#bufferStartTime + buffer.duration,
       now + this.#bufferingDuration
     );
-    // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
-    this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
+
+    if (this.processors.size > 0) {
+      // create buffer from left / right channels
+      const buffer = new AudioBuffer({
+        numberOfChannels: 2,
+        length: leftSamples.length,
+        sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
+      });
+      buffer.copyToChannel(leftSamples, 0);
+      buffer.copyToChannel(rightSamples, 1);
+      // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
+      this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
+    }
 
     // @todo - this may not behave as expected if radio is re-started after a stop
     if (!this.#readyResolverTriggered) {
