@@ -62,7 +62,7 @@ export class RtlSdrSourceNode extends GainNode {
     // @note - buffer duration is ~50ms, any possibilities to reduce that?
     // @todo - support modifying detune and playbackRate
     const src = new AudioBufferSourceNode(this.context, { buffer });
-    src.connect(this.context.destination);
+    src.connect(this);
     src.start(bufferStartTime);
   }
 
