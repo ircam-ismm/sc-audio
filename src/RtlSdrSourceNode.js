@@ -33,6 +33,7 @@ const STR_LDR_STREAM_SAMPLE_RATE = 48000;
 
 export class RtlSdrSourceNode extends GainNode {
   #stream;
+  #detune;
 
   constructor(context, {
     stream
@@ -58,16 +59,25 @@ export class RtlSdrSourceNode extends GainNode {
     return undefined;
   }
 
+  // set detune(value) {
+  //   this.#detune = value;
+  // }
+
   #process = (bufferStartTime, buffer) => {
+    const offset =  this.startTime > bufferStartTime
+      ? this.startTime - bufferStartTime
+      : 0;
+
     // @note - buffer duration is ~50ms, any possibilities to reduce that?
     // @todo - support modifying detune and playbackRate
     const src = new AudioBufferSourceNode(this.context, { buffer });
+    src.playbackRate.value = -0.5;
+
     src.connect(this);
-    src.start(bufferStartTime);
+    src.start(bufferStartTime, buffer.duration);
   }
 
   start(startTime = this.context.currentTime) {
-    // @todo - make sure we can't start a source twice for consistency w/ regular web audio sources
     this.#stream.addProcessor(this.#process);
     super.gain.setValueAtTime(1, startTime);
   }
@@ -155,11 +165,11 @@ export class RtlSdrStream {
   }
 
   addProcessor(processor) {
-    this.#streamDispatcher.processors.add(processor);
+    this.#streamDispatcher.addProcessor(processor);
   }
 
   deleteProcessor(processor) {
-    this.#streamDispatcher.processors.delete(processor);
+    this.#streamDispatcher.deleteProcessor(processor);
   }
 
   get context() {
@@ -219,6 +229,8 @@ class StreamDispatcher {
   #readyResolver;
   #readyResolverTriggered = false;
 
+  #currentBuffer;
+
   constructor(context, bufferingDuration, readyResolver) {
     this.#context = context;
     this.#bufferingDuration = bufferingDuration;
@@ -237,6 +249,14 @@ class StreamDispatcher {
     return this.#context.sampleRate;
   }
 
+  addProcessor(processor) {
+    this.#processors.add(processor);
+    processor(this.#bufferStartTime, this.#currentBuffer)
+  }
+  deleteProcessor(processor) {
+    this.#processors.delete(processor);
+  }
+
   play(leftSamples, rightSamples) {
     const now = this.#context.currentTime;
     const bufferDuration = leftSamples.length / STR_LDR_STREAM_SAMPLE_RATE;
@@ -246,18 +266,17 @@ class StreamDispatcher {
       now + this.#bufferingDuration
     );
 
-    if (leftSamples.length > 0 && this.#processors.size > 0) {
-      // create buffer from left / right channels
-      const buffer = new AudioBuffer({
-        numberOfChannels: 2,
-        length: leftSamples.length,
-        sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
-      });
-      buffer.copyToChannel(leftSamples, 0);
-      buffer.copyToChannel(rightSamples, 1);
-      // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
-      this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
-    }
+    const buffer = new AudioBuffer({
+      numberOfChannels: 2,
+      length: leftSamples.length,
+      sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
+    });
+    buffer.copyToChannel(leftSamples, 0);
+    buffer.copyToChannel(rightSamples, 1);
+
+    this.#currentBuffer = buffer;
+    // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
+    this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
 
     // @todo - this may not behave as expected if radio is re-started after a stop
     if (!this.#readyResolverTriggered) {

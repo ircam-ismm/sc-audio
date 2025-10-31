@@ -11,16 +11,26 @@ const stream = new RtlSdrStream(context, { bufferingDuration: 0.005 });
 await stream.start();
 console.log('radio stream ready!')
 
-// const src = new RtlSdrSourceNode(context, { stream });
-// src.connect(context.destination);
-// src.start();
+const src = new RtlSdrSourceNode(context, { stream });
+src.connect(context.destination);
+src.start();
 
 // kind of granular radio :)
-setInterval(() => {
-  const now = context.currentTime;
-  const src = new RtlSdrSourceNode(context, { stream });
-  src.connect(context.destination);
-  src.start(now);
-  src.stop(now + 0.09);
-}, 100);
+// setInterval(() => {
+//   const now = context.currentTime;
+//   {
+//     const src = new RtlSdrSourceNode(context, { stream });
+//     src.connect(context.destination);
+//     src.start(now);
+//     src.stop(now + 0.5);
+//   }
+
+//   // {
+//   //   const src = new RtlSdrSourceNode(context, { stream });
+//   //   src.detune = -1200;
+//   //   src.connect(context.destination);
+//   //   src.start(now + 0.5);
+//   //   src.stop(now + 0.6);
+//   // }
+// }, 100);
 
