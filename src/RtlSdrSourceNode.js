@@ -7,7 +7,7 @@ import {
 import {
   getMode,
   // getSchemes,
-  // modeParameters,
+  modeParameters,
 } from "@jtarrio/webrtlsdr/demod/modes.js";
 import {
   RTL2832U_Provider,
@@ -71,10 +71,10 @@ export class RtlSdrSourceNode extends GainNode {
     // @note - buffer duration is ~50ms, any possibilities to reduce that?
     // @todo - support modifying detune and playbackRate
     const src = new AudioBufferSourceNode(this.context, { buffer });
-    src.playbackRate.value = -0.5;
+    // src.playbackRate.value = 0.1;
 
     src.connect(this);
-    src.start(bufferStartTime, buffer.duration);
+    src.start(bufferStartTime);
   }
 
   start(startTime = this.context.currentTime) {
@@ -103,7 +103,7 @@ export class RtlSdrStream {
     bufferingDuration = DEFAULT_BUFFERING_DURATION, // room for buffering, see if we can lower it safely
     provider = new RTL2832U_Provider(), // actual hardware?
     hfSampleRate = 1.8e6,
-    hardwareFrequency = 91.7e6,
+    hardwareFrequency = 93.0e6,
     frequencyOffset = 0,
     hfGain = null, // AGC
     frequencyCorrection = 0, // le crystal là // ???
@@ -123,8 +123,8 @@ export class RtlSdrStream {
     this.#context = context;
 
     const {
-      promise,
-      resolve,
+      promise, // Promise
+      resolve, // Function
     } = Promise.withResolvers();
 
     this.#readyPromise = promise;
@@ -145,6 +145,10 @@ export class RtlSdrStream {
 
     this.#demodulator.setFrequencyOffset(frequencyOffset);
     this.#demodulator.setMode(this.#demodulator.getMode(demodulationMode));
+
+    let params = modeParameters(this.#demodulator.getMode(demodulationMode))
+    params.setStereo(false);
+
 
     // @todo
     // this.#demodulator.setVolume(1);
@@ -223,7 +227,10 @@ export class RtlSdrStream {
 
 class StreamDispatcher {
   #processors = new Set();
-  #bufferStartTime = -1;
+  // #bufferStartTime = -1;
+  #bufferStartTime = null;
+  #bufferCurrentTime;
+  #bufferCount = 0;
   #bufferingDuration;
   #context;
   #readyResolver;
@@ -260,11 +267,19 @@ class StreamDispatcher {
   play(leftSamples, rightSamples) {
     const now = this.#context.currentTime;
     const bufferDuration = leftSamples.length / STR_LDR_STREAM_SAMPLE_RATE;
+    console.log("audio sample length", leftSamples.length);
 
-    this.#bufferStartTime = Math.max(
-      this.#bufferStartTime + bufferDuration,
-      now + this.#bufferingDuration
-    );
+    if (this.#bufferStartTime === null) {
+      this.#bufferStartTime = now + this.#bufferingDuration;
+    }
+
+    this.#bufferCurrentTime = this.#bufferStartTime + (this.#bufferCount * bufferDuration);
+    this.#bufferCount += 1;
+
+    // this.#bufferStartTime = Math.max(
+    //   this.#bufferStartTime + bufferDuration, // 
+    //   now + this.#bufferingDuration
+    // );
 
     const buffer = new AudioBuffer({
       numberOfChannels: 2,
@@ -276,7 +291,7 @@ class StreamDispatcher {
 
     this.#currentBuffer = buffer;
     // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
-    this.#processors.forEach(processor => processor(this.#bufferStartTime, buffer));
+    this.#processors.forEach(processor => processor(this.#bufferCurrentTime, buffer));
 
     // @todo - this may not behave as expected if radio is re-started after a stop
     if (!this.#readyResolverTriggered) {
