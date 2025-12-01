@@ -19,5 +19,6 @@ export const pages = {
     'MuteNode',
     'PlaceholderNode',
     'VolumeNode',
+    'RtlSdrSourceNode',
   ].sort()),
 };
