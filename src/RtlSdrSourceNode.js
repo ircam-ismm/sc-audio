@@ -74,9 +74,9 @@ export class RtlSdrSourceNode extends GainNode {
     // src.playbackRate.value = 0.1;
 
     src.connect(this);
-    src.start(bufferStartTime);
+    src.start(bufferStartTime, offset);
 
-    console.log(bufferStartTime);
+    // console.log(bufferStartTime, offset);
   }
 
   start(startTime = this.context.currentTime) {
@@ -105,7 +105,7 @@ export class RtlSdrStream {
     bufferingDuration = DEFAULT_BUFFERING_DURATION, // room for buffering, see if we can lower it safely
     provider = new RTL2832U_Provider(), // actual hardware?
     hfSampleRate = 1.8e6,
-    hardwareFrequency = 100.0e6,
+    hardwareFrequency = 91.7e6,
     frequencyOffset = 0,
     hfGain = null, // AGC
     frequencyCorrection = 0, // le crystal là // ???
@@ -113,6 +113,7 @@ export class RtlSdrStream {
     demodulationMode = 'WBFM',
     buffersPerSecond= 20 // click if you change
   } = {}) {
+
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 1 is not an instance of BaseAudioContext`);
     }
@@ -289,11 +290,8 @@ class StreamDispatcher {
       sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
     });
 
-    buffer.getChannelData(0).set(leftSamples);
-    buffer.getChannelData(1).set(rightSamples);
-
-    // buffer.copyToChannel(leftSamples, 0);
-    // buffer.copyToChannel(rightSamples, 1);
+    buffer.copyToChannel(leftSamples, 0);
+    buffer.copyToChannel(rightSamples, 1);
 
     this.#currentBuffer = buffer;
     // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
@@ -307,4 +305,48 @@ class StreamDispatcher {
       this.#readyResolverTriggered = true;
     }
   }
+
+// from Suzanne computer
+ // play(leftSamples, rightSamples) {
+ //    const now = this.#context.currentTime;
+ //    const bufferDuration = leftSamples.length / STR_LDR_STREAM_SAMPLE_RATE;
+
+ //    if (this.#bufferStartTime === null) {
+ //      this.#bufferStartTime = now + this.#bufferingDuration;
+ //    }
+
+ //    this.#bufferCurrentTime = this.#bufferStartTime + (this.#bufferCount * bufferDuration);
+ //    this.#bufferCount += 1;
+
+ //    // this.#bufferStartTime = Math.max(
+ //    //   this.#bufferStartTime + bufferDuration, //
+ //    //   now + this.#bufferingDuration
+ //    // );
+
+ //    const buffer = new AudioBuffer({
+ //      numberOfChannels: 2,
+ //      length: leftSamples.length,
+ //      sampleRate: STR_LDR_STREAM_SAMPLE_RATE,
+ //    });
+
+ //    buffer.getChannelData(0).set(leftSamples);
+ //    buffer.getChannelData(1).set(rightSamples);
+
+ //    // buffer.copyToChannel(leftSamples, 0);
+ //    // buffer.copyToChannel(rightSamples, 1);
+
+ //    this.#currentBuffer = buffer;
+ //    // propagate timing infos and audio buffer to `RtlSdrSourceNode`s
+ //    this.#processors.forEach(processor => processor(this.#bufferCurrentTime, buffer));
+
+ //    // @todo - this may not behave as expected if radio is re-started after a stop
+ //    if (!this.#readyResolverTriggered) {
+ //      // context.currentTime can be one block ahead of time, then we add a block duration for safety
+ //      const dt = this.#bufferStartTime - now + (512 / this.#context.sampleRate);
+ //      setTimeout(this.#readyResolver, dt * 1000);
+ //      this.#readyResolverTriggered = true;
+ //    }
+ //  }
+
+
 }
