@@ -12,13 +12,20 @@ export class DynamicsCompressorNode {
     }, ...args: any[]);
     linearTimeConstant: number;
     curveTimeConstant: number;
+    _dynamicsCompressorNode: any;
+    /**
+     * Shallow `super.gain` AudioParam
+     * @private
+     */
+    private get gain();
     set attack(value: number);
     get attack(): number;
     set release(value: number);
     get release(): number;
     set threshold(value: number);
     get threshold(): number;
-    set ratio(value: any);
+    set ratio(value: number);
+    get ratio(): number;
     set knee(value: number);
     get knee(): number;
     get reduction(): any;
