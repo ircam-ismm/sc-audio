@@ -133,6 +133,34 @@ Activate or deactivate the `MuteNode` at given time.
 *   `when` **[number][3]** Time at which the change should be applied. In audio
     context current time coordinates.
 
+## stages
+
+Number of cascading allpass filters.
+
+Note that changing this parameter at runtime may cause discontinuities
+
+Type: [Number][3]
+
+## ratio
+
+Mix ratio between dry signal (0) and wet signal (1)
+
+## rate
+
+Rate (in Hz) of the LFO modulating the frequency of the filter bank.
+
+## depth
+
+Depth (in Hz) of the modulation applied to the frequency of the filter bank by the LFO.
+
+A depth of 100 applied to a frequency of 1000 will produce a frequency comprised
+between 900 and 1100.
+
+## frequency
+
+Frequency of the all pass filters of the filter bank. This is the frequency at
+which the phases will be shifted.
+
 ## PlaceholderNode
 
 **Extends AudioNode**
@@ -166,34 +194,6 @@ wrapper.setNodeAtTime(node2, audioContext.currentTime + 1);
 *   `node` **AudioNode** AudioNode to be wrapped.
 *   `when` **[number][3]** Time at which the change should be applied. In audio
     context current time coordinates.
-
-## stages
-
-Number of cascading allpass filters.
-
-Note that changing this parameter at runtime may cause discontinuities
-
-Type: [Number][3]
-
-## ratio
-
-Mix ratio between dry signal (0) and wet signal (1)
-
-## rate
-
-Rate (in Hz) of the LFO modulating the frequency of the filter bank.
-
-## depth
-
-Depth (in Hz) of the modulation applied to the frequency of the filter bank by the LFO.
-
-A depth of 100 applied to a frequency of 1000 will produce a frequency comprised
-between 900 and 1100.
-
-## frequency
-
-Frequency of the all pass filters of the filter bank. This is the frequency at
-which the phases will be shifted.
 
 ## VolumeNode
 

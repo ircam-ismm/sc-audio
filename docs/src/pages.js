@@ -16,6 +16,7 @@ export const pages = {
     'BypassNode',
     'CollectorNode',
     'DistributorNode',
+    'DynamicsCompressorNode',
     'MuteNode',
     'PlaceholderNode',
     'VolumeNode',

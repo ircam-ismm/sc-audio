@@ -4,10 +4,6 @@ import { ScaledConstantSourceNode } from '../src/index.js';
 
 const audioContextOptions = { length: 256, numberOfChannels: 1, sampleRate: 48000 };
 
-function floatEq(input, output, error) {
-
-}
-
 describe('# ScaledConstantSourceNode', () => {
   describe('## constructor(context: BaseAudioContext, options: ControllerSourceOptions)', () => {
     it('offset should default to 1', () => {
@@ -54,7 +50,7 @@ describe('# ScaledConstantSourceNode', () => {
         },
         values: [[-10, 1], [-6, -0.5], [-2, -2]],
       },
-    ]
+    ];
     for (let i = 0; i < tests.length; i++) {
       const { config, values } = tests[i];
       const { inputStart, inputEnd, outputStart, outputEnd } = config;
@@ -71,8 +67,10 @@ describe('# ScaledConstantSourceNode', () => {
           node.start();
 
           const buffer = await audioContext.startRendering();
+
           const result = buffer.getChannelData(0);
           const expected = new Float32Array(result.length).fill(output);
+
 
           assert.equal(result.length, expected.length);
 

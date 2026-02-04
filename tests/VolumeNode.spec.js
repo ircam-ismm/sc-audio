@@ -86,7 +86,7 @@ describe('# VolumeNode', () => {
         const db = controlChannel[i];
         const sample = result[i]
         const expected = decibelToLinear(db);
-        console.log(db, sample, expected);
+        // console.log(db, sample, expected);
         assert.approximately(sample, expected, 1e-7);
       }
     });

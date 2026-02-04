@@ -1,3 +1,4 @@
+export function computeCurve(func: any, length: any): Float32Array<any>;
 /** @private */
 export const DEFAULT_WAVETABLE_SIZE: 2048;
 /** @private */

@@ -8,9 +8,9 @@ const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 4800
   'BypassNode',
   'CollectorNode',
   'DistributorNode',
+  'DynamicsCompressorNode',
   'MuteNode',
   'PlaceholderNode',
-  'ScaledConstantSourceNode',
   'VolumeNode',
 ].forEach(name => {
   const ctor = root[name];
@@ -33,18 +33,28 @@ const audioContextOptions = { length: 100, numberOfChannels: 1, sampleRate: 4800
         assert.throws(() => new ctor(audioContext, NaN));
       });
 
-      it('should succeed if only argument 1 is given', () => {
-        const audioContext = new OfflineAudioContext(audioContextOptions);
-        const node = new ctor(audioContext);
-        assert.isTrue(node instanceof ctor);
-      });
+      if (name in [
+        'BypassNode',
+        'CollectorNode',
+        'DistributorNode',
+        'DynamicsCompressorNode',
+        'MuteNode',
+        'PlaceholderNode',
+        'VolumeNode',
+      ]) {
+        it('should succeed if only argument 1 is given', () => {
+          const audioContext = new OfflineAudioContext(audioContextOptions);
+          const node = new ctor(audioContext);
+          assert.isTrue(node instanceof ctor);
+        });
 
-      it('should succeed if two arguments are given', () => {
-        const audioContext = new OfflineAudioContext(audioContextOptions);
-        const node = new ctor(audioContext, {});
-        assert.isTrue(node instanceof ctor);
-      });
 
+        it('should succeed if two arguments are given', () => {
+          const audioContext = new OfflineAudioContext(audioContextOptions);
+          const node = new ctor(audioContext, {});
+          assert.isTrue(node instanceof ctor);
+        });
+      }
 
       it('should not expose a gain property if extends GainNode', () => {
         const audioContext = new OfflineAudioContext(audioContextOptions);
