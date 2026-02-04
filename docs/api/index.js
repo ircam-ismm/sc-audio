@@ -84,6 +84,183 @@ An AudioParam that controls the amount of incoming signal from the inputs to be 
 
 Type: AudioParam
 
+## DynamicsCompressorNode
+
+**Extends GainNode**
+
+A dynamics compressor node that extends GainNode to provide audio compression
+with configurable attack, release, threshold, ratio, and knee parameters.
+
+The compressor uses a pre-gain stage, a Web Audio API DynamicsCompressorNode,
+and a post-gain stage to allow flexible control over input and output levels.
+
+Contrary to the Web Audio API DynamicsCompressorNode, the knee is around the threshold.
+
+All parameters use the same range, but are not AudioParam.
+
+### Parameters
+
+*   `context` **BaseAudioContext** The audio context to associate with this node
+*   `options` **[Object][1]** Configuration options for the compressor (optional, default `{}`)
+
+    *   `options.attack` **[number][3]** Attack time in seconds (optional, default `10e-3`)
+    *   `options.release` **[number][3]** Release time in seconds (optional, default `250e-3`)
+    *   `options.threshold` **[number][3]** Compression threshold in dB (optional, default `-6`)
+    *   `options.ratio` **[number][3]** Compression ratio (optional, default `12`)
+    *   `options.knee` **[number][3]** Knee width in dB (optional, default `30`)
+    *   `options.preGain` **[number][3]** Pre-compression gain in dB (optional, default `0`)
+    *   `options.postGain` **[number][3]** Post-compression gain in dB (optional, default `0`)
+    *   `options.linearTimeConstant` **[number][3]** Time constant for linear ramp in seconds (optional, default `10e-3`)
+    *   `options.curveTimeConstant` **[number][3]** Time constant for curve ramp in seconds (optional, default `10e-3`)
+
+<!---->
+
+*   Throws **[TypeError][5]** If context is not an instance of BaseAudioContext
+*   Throws **[TypeError][5]** If options argument is provided but is not an object
+
+### attack
+
+Sets the attack time of the dynamics compressor in seconds.
+
+#### Parameters
+
+*   `value` **[number][3]** The attack time value (must be a finite number)
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number
+
+### attack
+
+Gets the attack time of the dynamics compressor in seconds.
+The attack time is the amount of time it takes for the compressor to reduce the gain
+when the input signal exceeds the threshold.
+
+Type: [number][3]
+
+### release
+
+Sets the release time (in seconds) of the dynamics compressor.
+
+#### Parameters
+
+*   `value` **[number][3]** The release time in seconds. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number.
+
+### release
+
+Gets the release time of the dynamics compressor in seconds.
+The release time is the amount of time it takes for the gain to return to 1 when the input level is below the threshold.
+
+Returns **[number][3]** The release time in seconds.
+
+### threshold
+
+Sets the threshold value for the dynamics compressor.
+
+#### Parameters
+
+*   `value` **[number][3]** The threshold value in decibels. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number.
+
+### threshold
+
+Gets the threshold value in decibels of the dynamics compressor node.
+The threshold is the decibel value above which the compression will start to take effect.
+
+Returns **[number][3]** The threshold value in decibels.
+
+### ratio
+
+Sets the compression ratio of the dynamics compressor node.
+
+#### Parameters
+
+*   `value` **[number][3]** The compression ratio. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number.
+
+### ratio
+
+Gets the compression ratio of the dynamics compressor.
+The ratio defines how much the signal is reduced above the threshold.
+For example, a ratio of 4 means that for every 4dB the signal rises above the threshold,
+the output will only rise by 1dB.
+
+Returns **[number][3]** The compression ratio value.
+
+### knee
+
+Sets the knee value for the dynamics compressor.
+
+#### Parameters
+
+*   `value` **[number][3]** The knee value in decibels. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number.
+
+### knee
+
+Gets the knee value of the dynamics compressor.
+The knee property determines the transition region between the linear and logarithmic portions
+of the compression curve.
+
+Returns **[number][3]** The knee value in decibels.
+
+### reduction
+
+Gets the current reduction value of the dynamics compressor node.
+
+Returns **[number][3]** The current reduction value in decibels.
+
+### preGain
+
+Sets the pre-gain value for the dynamics compressor.
+
+#### Parameters
+
+*   `value` **[number][3]** The pre-gain value in decibels. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the value is not a finite number.
+
+### preGain
+
+Gets the current value of the pre-gain applied before compression.
+
+Type: [number][3]
+
+### postGain
+
+Sets the post-gain value in decibels for the compressor node.
+Validates that the provided value is a finite number, then updates the internal post-gain state
+and applies the corresponding linear gain to the underlying audio node.
+
+#### Parameters
+
+*   `value` **[number][3]** The post-gain value in decibels to set. Must be a finite number.
+
+<!---->
+
+*   Throws **[TypeError][5]** If the provided value is not a finite number.
+
+### postGain
+
+Gets the current value of the post-gain applied after compression.
+
+Type: [number][3]
+
 ## DistributorNode
 
 **Extends AudioNode**
@@ -234,3 +411,5 @@ Type: AudioParam
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
 [4]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[5]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/TypeError
