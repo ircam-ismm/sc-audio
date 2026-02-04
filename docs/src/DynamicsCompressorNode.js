@@ -42,7 +42,7 @@ export function template(example, api) {
   return html`
 <h2>DynamicsCompressorNode</h2>
 
-<p>The DynamicsCompressorNode interface allows to have a knee around the threshold, (while the Web Audio APIDynamicsCompressorNode adds it).</p>
+<p>The DynamicsCompressorNode interface allows to have a knee around the threshold, (while the Web Audio API DynamicsCompressorNode adds it).</p>
 
 <sc-code-example language="txt">
   [input]
