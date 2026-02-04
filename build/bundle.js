@@ -3671,7 +3671,7 @@ ${Ye(e)}
   `}var i0,Ii,Ps,La,Cn,o2=y(()=>{D();zt();Ge();Wi();Tn()});var c2={};ci(c2,{enter:()=>rM,exit:()=>aM,loadAssets:()=>oM,template:()=>lM});async function rM(i){qa=i,Be=new Aa(qa),Be.connect(qa.destination)}async function oM(i){a2=await i.load("./assets/drum-loop.wav")}function aM(){Rn&&Rn.stop(),Be.disconnect()}function l2(){let i=document.querySelector("#reduction");i&&(i.value=Be?Be.reduction:0),requestAnimationFrame(l2)}function lM(i,e){return x`
 <h2>DynamicsCompressorNode</h2>
 
-<p>The DynamicsCompressorNode interface allows to have a knee around the threshold, (while the Web Audio APIDynamicsCompressorNode adds it).</p>
+<p>The DynamicsCompressorNode interface allows to have a knee around the threshold, (while the Web Audio API DynamicsCompressorNode adds it).</p>
 
 <sc-code-example language="txt">
   [input]
