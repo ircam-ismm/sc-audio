@@ -76,7 +76,8 @@
   "dependencies": {
     "@ircam/sc-loader": "^1.1.0",
     "@ircam/sc-utils": "^1.10.1",
-    "@jtarrio/webrtlsdr": "^2.0.3",
+    "@jtarrio/signals": "^0.9.5",
+    "@jtarrio/webrtlsdr": "^3.0.4",
     "isomorphic-web-audio-api": "^1.0.2",
     "usb": "^2.16.0"
   }

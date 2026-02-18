@@ -1,18 +1,19 @@
 import {
-  Demodulator
-} from '@jtarrio/webrtlsdr/demod/demodulator.js';
-import {
-  Radio
+  Radio, RtlProvider
 } from '@jtarrio/webrtlsdr/radio.js';
 import {
-  getMode,
-  // getSchemes,
-  modeParameters,
-} from "@jtarrio/webrtlsdr/demod/modes.js";
+  Demodulator
+} from '@jtarrio/signals/demod/demodulator.js';
 import {
-  RTL2832U_Provider,
-  DirectSampling,
+  RTL2832U_Provider
 } from '@jtarrio/webrtlsdr/rtlsdr.js';
+import {
+  getMode,
+  modeParameters
+} from "@jtarrio/signals/demod/modes.js";
+import {
+  ensureWebUSB
+} from '#ensure-webusb.js'
 import {
   isPlainObject,
 } from '@ircam/sc-utils';
@@ -23,13 +24,11 @@ import {
   GainNode,
   // AudioContext
 } from 'isomorphic-web-audio-api';
-import {
-  ensureWebUSB
-} from '#ensure-webusb.js'
+
 
 // values picked from base class
-const DEFAULT_BUFFERING_DURATION = 0.05;
-const STR_LDR_STREAM_SAMPLE_RATE = 48000;
+// const DEFAULT_BUFFERING_DURATION = 0.05;
+// const STR_LDR_STREAM_SAMPLE_RATE = 48000;
 
 export class RtlSdrSourceNode extends GainNode {
   #stream;
@@ -100,18 +99,18 @@ export class RtlSdrStream {
   #demodulator;
   #readyPromise;
   #radio;
+  #provider;
+  #params;
 
   constructor(context, {
-    bufferingDuration = DEFAULT_BUFFERING_DURATION, // room for buffering, see if we can lower it safely
-    provider = new RTL2832U_Provider(), // actual hardware?
-    hfSampleRate = 1.8e6,
     hardwareFrequency = 91.7e6,
-    frequencyOffset = 0,
+    provider = new RtlProvider(new RTL2832U_Provider({webusb: webusb})), // actual hardware?
     hfGain = null, // AGC
-    frequencyCorrection = 0, // le crystal là // ???
-    filterWidth = 150e6, // change only on NBFM, AM, SSB, and CW
-    demodulationMode = 'WBFM',
-    buffersPerSecond= 20 // click if you change
+    stereo = false,
+    downsamplerTaps = 151, /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+    rfTaps = 151, /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
+    audioTaps = 41, /** Number of taps for the audio filter. Must be an odd number. 41 by default. */
+    buffersPerSecond = 20 // don't change for now
   } = {}) {
 
     if (!(context instanceof BaseAudioContext)) {
@@ -121,8 +120,6 @@ export class RtlSdrStream {
     if (arguments[1] !== undefined && !isPlainObject(arguments[1])) {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 2 is not an object`);
     }
-
-    // @todo - check / sanitize the arguments
 
     this.#context = context;
 
@@ -134,35 +131,43 @@ export class RtlSdrStream {
     this.#readyPromise = promise;
     this.#streamDispatcher = new StreamDispatcher(
       this.#context, // we need this for timing reasons
-      bufferingDuration,
+      bufferingDuration, // un truc de benjamin
       resolve, // make sure we resolve `start` when we actually have something to play
     );
 
-    this.#demodulator = new Demodulator(this.#streamDispatcher);
-    this.#radio = new Radio(provider, this.#demodulator, { buffersPerSecond });
+    this.#demodulator = new Demodulator({
+      modeOption: {
+        downsamplerTaps,
+        rfTaps,
+        audioTaps
+      },
+      player: this.#streamDispatcher
+    });
+
+
+    const usb = await ensureWebUSB();
+    if (usb) {
+      this.#provider = new RtlProvider(new RTL2832U_Provider({webusb: usb}));
+    } else {
+      this.#provider = new RtlProvider(new RTL2832U_Provider());
+    };
+
+
+    this.#radio = new Radio(this.#provider, this.#demodulator, { buffersPerSecond });
 
     this.#radio.setFrequency(hardwareFrequency);
-    this.#radio.setDirectSamplingMethod(DirectSampling.Off);
-    this.#radio.setFrequencyCorrection(frequencyCorrection);
     this.#radio.setGain(hfGain);
-    this.#radio.setSampleRate(hfSampleRate);
 
-    this.#demodulator.setFrequencyOffset(frequencyOffset);
-    this.#demodulator.setMode(this.#demodulator.getMode(demodulationMode));
+    this.#params = modeParameters(this.#demodulator.getMode());
+    this.#params.setStereo(stereo);
+    this.#demodulator.setMode(this.#params.mode);
+    this.#demodulator.setVolume(1);
 
-    let params = modeParameters(this.#demodulator.getMode(demodulationMode))
-    params.setStereo(false);
+    console.log("radio stream created");
 
-
-    // @todo
-    // this.#demodulator.setVolume(1);
   }
 
   async start() {
-    // @note - looks ok to have this here
-    // - ensure window.navigator.usb exists in browsers
-    // - monkey patch globalThis with webusb in node.js
-    await ensureWebUSB();
     this.#radio.start();
 
     return this.#readyPromise;
@@ -184,10 +189,6 @@ export class RtlSdrStream {
     return this.#context;
   }
 
-  // get hfSampleRate() {
-  //   return this.#radio.getSampleRate();
-  // }
-
   get hardwareFrequency() {
     return this.#radio.getFrequency();
   }
@@ -196,39 +197,22 @@ export class RtlSdrStream {
     this.#radio.setFrequency(frequency);
   }
 
-  // get frequencyCorrection() {
-  //   return this.#radio.getFrequencyCorrection();
-  // }
+  set gain(gain) {
+    this.#radio.setGain(gain);
+  }
 
-  // set frequencyCorrection(frequencyCorrection) {
-  //   this.#radio.setFrequencyCorrection(frequencyCorrection);
-  // }
+  get stereo() {
+    return this.#params.mode.stereo;
+  }
 
-  // get hfGain() {
-  //   return this.#radio.getGain();
-  // }
+  set stereo(stereo) {
+    this.#params.setStereo(stereo);
+    this.#demodulator.setMode(this.#params.mode);
+  }
 
-  // set hfGain(gain) {
-  //   this.#radio.setGain(gain);
-  // }
-
-  // get frequencyOffset() {
-  //   return this.#demodulator.getFrequencyOffset();
-  // }
-
-  // set frequencyOffset(frequencyOffset) {
-  //   this.#demodulator.setFrequencyOffset(frequencyOffset);
-  // }
-
-  // get demodulationMode() {
-  //   return this.#demodulator.getMode().scheme;
-  // }
-
-  // set demodulationMode(mode) {
-  //   this.#demodulator.setMode(getMode(mode));
-  // }
 }
-
+// on en est là!!!
+// à vérifier #process
 class StreamDispatcher {
   #processors = new Set();
   // #bufferStartTime = -1;
