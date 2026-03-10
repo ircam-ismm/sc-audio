@@ -4,18 +4,20 @@ import {
   RtlSdrSourceNode,
 } from '../../src/index.js';
 
-console.log("import ok")
-
 // in browsers, you will need to resume on a user gesture
 const context = new AudioContext();
 
-const stream = new RtlSdrStream(context,{hardwareFrequency:100e6});
-await stream.start();
-console.log('radio stream ready!')
+const stream = new RtlSdrStream(context,{
+  hardwareFrequency: 91.7e6,
+  bufferingDuration: 0,
+});
 
-stream.hardwareFrequency = 93.5e6
-// setTimeout(() => {
-// }, "10000");
+await stream.start();
+// console.log('radio stream ready!')
+
+// // stream.hardwareFrequency = 93.5e6
+// // setTimeout(() => {
+// // }, "10000");
 
 const src = new RtlSdrSourceNode(context, { stream });
 src.connect(context.destination);
@@ -39,4 +41,3 @@ src.start();
 //   //   src.stop(now + 0.6);
 //   // }
 // }, 100);
-
