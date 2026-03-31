@@ -24,7 +24,6 @@ import {
   AudioBufferSourceNode,
   BaseAudioContext,
   GainNode,
-  // AudioContext
 } from 'isomorphic-web-audio-api';
 
 let webusb
@@ -40,7 +39,6 @@ if (!isBrowser()) {
   webusb = navigator.usb;
 }
 
-// à cleaner
 export class RtlSdrSourceNode extends GainNode {
   #stream;
   #detune;
@@ -69,6 +67,7 @@ export class RtlSdrSourceNode extends GainNode {
     return undefined;
   }
 
+  // @todo - support modifying detune and playbackRate
   // set detune(value) {
   //   this.#detune = value;
   // }
@@ -79,14 +78,12 @@ export class RtlSdrSourceNode extends GainNode {
       : 0;
 
     // @note - buffer duration is ~50ms, any possibilities to reduce that?
-    // @todo - support modifying detune and playbackRate
+
     const src = new AudioBufferSourceNode(this.context, { buffer });
-    // src.playbackRate.value = 0.1;
 
     src.connect(this);
     src.start(bufferStartTime, offset);
 
-    // console.log(bufferStartTime, offset);
   }
 
   start(startTime = this.context.currentTime) {
@@ -101,23 +98,22 @@ export class RtlSdrSourceNode extends GainNode {
     setTimeout(() => this.#stream.deleteProcessor(this.#process), dt * 1000);
   }
 
-  // delegate connect / disconnect to `super`
 }
 
-// à cleaner, passer tous les attributs en privé + getters et setters
 export class RtlSdrStream {
-  // #radio;
-  // #demodulator;
 
-  // #readyPromise;
   #context;
-  // #params;
-
+  #streamDispatcher;
+  #demodulator;
+  #provider
+  #params;
+  #radio;
 
   constructor(context, {
     hardwareFrequency = 91.7e6,
     stereo = false,
     bufferingDuration = 0.05,
+    buffersPerSecond = 20,
   }) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 1 is not an instance of BaseAudioContext`);
@@ -127,16 +123,11 @@ export class RtlSdrStream {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 2 is not an object`);
     }
 
-    this.#context = context; // getter only / readonly
-    this.hardwareFrequency = hardwareFrequency; // set is used for type checking
-    this.stereo = stereo; // set is used for type checking
-    // this.demodOutRate = 48000;
-    // this.bufferingDuration = 0.05;
+    this.#context = context;
 
-    this.buffersPerSecond = 100;
-    this.streamDispatcher = new StreamDispatcher(this.#context, bufferingDuration);
+    this.#streamDispatcher = new StreamDispatcher(this.#context, bufferingDuration);
 
-    this.demodulator = new Demodulator({
+    this.#demodulator = new Demodulator({
       modeOption: {
         deemphasizerTc: 50,
         /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
@@ -146,22 +137,20 @@ export class RtlSdrStream {
         /** Number of taps for the audio filter. Must be an odd number. 41 by default. */
         audioTaps: 41
       },
-      player: this.streamDispatcher,
+      player: this.#streamDispatcher,
     });
 
-    this.provider = new RtlProvider(new RTL2832U_Provider({ webusb }));
+    this.#provider = new RtlProvider(new RTL2832U_Provider({ webusb }));
 
-    this.params = modeParameters(this.demodulator.getMode());
-    this.params.setStereo(this.stereo);
+    this.stereo = stereo;
 
-    this.demodulator.setMode(this.params.mode);
-    this.demodulator.setVolume(1);
+    this.#demodulator.setVolume(1);
 
-    this.radio = new Radio(this.provider, this.demodulator, { buffersPerSecond: this.buffersPerSecond });
-    this.radio.setFrequency(this.hardwareFrequency);
-    this.radio.setGain(null);
-
-    // this.radio.start();
+    this.#radio = new Radio(this.#provider, this.#demodulator, { buffersPerSecond });
+    
+    this.hardwareFrequency = hardwareFrequency;
+    
+    this.#radio.setGain(null);
 
   }
 
@@ -172,23 +161,55 @@ export class RtlSdrStream {
       resolve, // Function
     } = Promise.withResolvers();
 
-    this.streamDispatcher.init(resolve);
-    this.radio.start();
+    this.#streamDispatcher.init(resolve);
+    this.#radio.start();
 
     return promise;
   }
 
   async stop() {
-    this.radio.stop();
+    this.#radio.stop();
   }
 
   addProcessor(processor) {
-    this.streamDispatcher.addProcessor(processor);
+    this.#streamDispatcher.addProcessor(processor);
   }
 
   deleteProcessor(processor) {
-    this.streamDispatcher.deleteProcessor(processor);
+    this.#streamDispatcher.deleteProcessor(processor);
   }
+
+  get context() {
+    return this.#context;
+  }
+
+  get stereo() {
+    const params = modeParameters(this.#demodulator.getMode());
+    return params.getStereo();
+  }
+
+  set stereo(value) {
+    const params = modeParameters(this.#demodulator.getMode());
+    params.setStereo(value);
+    this.#demodulator.setMode(params.mode);
+  }
+
+  get hardwareFrequency() {
+    return this.#radio.getFrequency();
+  }
+
+  set hardwareFrequency(value) {
+    this.#radio.setFrequency(value);
+  }
+
+  get buffersPerSecond() {
+    return this.#radio.options.buffersPerSecond;
+  }
+
+  get bufferingDuration() {
+    return this.#streamDispatcher.bufferingDuration;
+  }
+
 }
 
 const DEMOD_OUT_RATE = 48000;
@@ -235,11 +256,6 @@ class StreamDispatcher {
     try {
       const bufferSize = leftSamples.length;
       const bufferDuration = bufferSize / DEMOD_OUT_RATE;
-      console.log(bufferDuration);
-
-// @todo implémenter avec un compteur pour éviter les erreurs de float
-      // this.lastPlayerAt = Math.max(this.bufferCounter * bufferDuration)
-      // this.bufferCounter += 1;
 
       this.lastPlayedAt = Math.max(this.lastPlayedAt + bufferDuration, this.audioContext.currentTime + this.bufferingDuration);
       

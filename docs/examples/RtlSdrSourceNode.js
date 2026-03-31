@@ -9,15 +9,10 @@ const context = new AudioContext();
 
 const stream = new RtlSdrStream(context,{
   hardwareFrequency: 91.7e6,
-  bufferingDuration: 0,
+  bufferingDuration: 0.05,
 });
 
 await stream.start();
-// console.log('radio stream ready!')
-
-// // stream.hardwareFrequency = 93.5e6
-// // setTimeout(() => {
-// // }, "10000");
 
 const src = new RtlSdrSourceNode(context, { stream });
 src.connect(context.destination);
