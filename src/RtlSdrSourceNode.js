@@ -23,18 +23,19 @@ import {
   GainNode,
 } from 'isomorphic-web-audio-api';
 
-let webusb
+import { webusb } from "usb";
+// let webusb
 
-if (!isBrowser()) {
-  const mod = await import('usb');
-  webusb = mod.webusb;
-} else {
-  if (!navigator.usb) {
-    throw new Error(`Your browser does not support web USB API`);
-  }
+// if (!isBrowser()) {
+//   const mod = await import('usb');
+//   webusb = mod.webusb;
+// } else {
+//   if (!navigator.usb) {
+//     throw new Error(`Your browser does not support web USB API`);
+//   }
 
-  webusb = navigator.usb;
-}
+//   webusb = navigator.usb;
+// }
 
 export class RtlSdrSourceNode extends GainNode {
   #stream;
@@ -111,7 +112,7 @@ export class RtlSdrStream {
     stereo = false,
     bufferingDuration = 0.05,
     buffersPerSecond = 20,
-  }) {
+  } = {}) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 1 is not an instance of BaseAudioContext`);
     }
@@ -137,7 +138,7 @@ export class RtlSdrStream {
       player: this.#streamDispatcher,
     });
 
-    this.#provider = new RtlProvider(new RTL2832U_Provider({ webusb }));
+    this.#provider = new RtlProvider(new RTL2832U_Provider({ webusb: webusb }));
 
     this.stereo = stereo;
 
