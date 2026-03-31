@@ -132,11 +132,13 @@ export class RtlSdrStream {
     this.#streamDispatcher = new StreamDispatcher(this.#context, bufferingDuration);
 
     this.#demodulator = new Demodulator({
-      modeOption: {
-        deemphasizerTc: deemphasizerTc,
-        downsamplerTaps: downsamplerTaps,
-        rfTaps: rfTaps,
-        audioTaps: audioTaps
+     modeOptions: {
+        "WBFM": {
+            deemphasizerTc,
+            downsamplerTaps,
+            rfTaps,
+            audioTaps
+        },
       },
       player: this.#streamDispatcher,
     });
@@ -148,7 +150,7 @@ export class RtlSdrStream {
     this.#demodulator.setVolume(1);
 
     this.#radio = new Radio(this.#provider, this.#demodulator, { buffersPerSecond });
-    
+
     this.hardwareFrequency = hardwareFrequency;
     
     this.#radio.setGain(null);
