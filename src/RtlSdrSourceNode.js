@@ -23,6 +23,8 @@ import {
   GainNode,
 } from 'isomorphic-web-audio-api';
 
+
+// careful, not working anymore with navigator, need conditional import from package.json
 import { webusb } from "usb";
 // let webusb
 
@@ -108,10 +110,14 @@ export class RtlSdrStream {
   #radio;
 
   constructor(context, {
-    hardwareFrequency = 91.7e6,
-    stereo = false,
-    bufferingDuration = 0.05,
-    buffersPerSecond = 20,
+    hardwareFrequency = 91.7e6, // tuning frequency
+    stereo = false, // stereo
+    bufferingDuration = 0.05, // safety time before first play to avoid click
+    buffersPerSecond = 20, // number of samples to process per second
+    downsamplerTaps = 151, /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+    rfTaps = 151, /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
+    audioTaps = 41, /** Number of taps for the audio filter. Must be an odd number. 41 by default. */
+    deemphasizerTc = 50   /** The time constant for the deemphasizer, in microseconds. 50 by default. This should be 75 for the US and South Korea, 50 everywhere else.*/
   } = {}) {
     if (!(context instanceof BaseAudioContext)) {
       throw new TypeError(`Failed to construct 'RtlSdrStream': Argument 1 is not an instance of BaseAudioContext`);
@@ -127,13 +133,10 @@ export class RtlSdrStream {
 
     this.#demodulator = new Demodulator({
       modeOption: {
-        deemphasizerTc: 50,
-        /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
-        downsamplerTaps: 151,
-        /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
-        rfTaps: 151,
-        /** Number of taps for the audio filter. Must be an odd number. 41 by default. */
-        audioTaps: 41
+        deemphasizerTc,
+        downsamplerTaps,
+        rfTaps,
+        audioTaps
       },
       player: this.#streamDispatcher,
     });
