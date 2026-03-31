@@ -133,10 +133,10 @@ export class RtlSdrStream {
 
     this.#demodulator = new Demodulator({
       modeOption: {
-        deemphasizerTc,
-        downsamplerTaps,
-        rfTaps,
-        audioTaps
+        deemphasizerTc: deemphasizerTc,
+        downsamplerTaps: downsamplerTaps,
+        rfTaps: rfTaps,
+        audioTaps: audioTaps
       },
       player: this.#streamDispatcher,
     });
