@@ -13,9 +13,6 @@ import {
 } from "@jtarrio/signals/demod/modes.js";
 import { AudioPlayer } from "@jtarrio/signals/players/audioplayer.js";
 import {
-  ensureWebUSB
-} from '#ensure-webusb.js'
-import {
   isPlainObject,
   isBrowser,
 } from '@ircam/sc-utils';
@@ -155,7 +152,7 @@ export class RtlSdrStream {
   }
 
   async start() {
-    console.log("stream started")
+    console.log("stream started - lib version 31/03/2026");
     const {
       promise, // Promise
       resolve, // Function
